@@ -2,7 +2,7 @@
 
 Validated on 2026-08-30 before branch replacement:
 
-- 12 CPU unit tests passed (registry, fixed-label metrics, per-aspect and
+- 13 CPU unit tests passed (registry, fixed-label metrics, per-aspect and
   seen/unseen reports, resumable runtime, gating, and public-program audit);
 - every Python entry point compiled and every shell launcher passed `bash -n`;
 - both vLLM and llama.cpp launchers resolved correct dry-run commands, including
