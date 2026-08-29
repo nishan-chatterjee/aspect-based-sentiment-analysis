@@ -1,0 +1,7 @@
+{
+  "train": [
+    {"uuid": "train-1", "article": "<aspect>Modri Gaj</aspect> je pravočasno odgovoril.", "aspect": "Modri Gaj", "sentiment": 1},
+    {"uuid": "train-2", "article": "Račun podjetja <aspect>Modri Gaj</aspect> je bil nejasen.", "aspect": "Modri Gaj", "sentiment": -1},
+    {"uuid": "train-3", "article": "<aspect>Južni Most</aspect> je objavil urnik.", "aspect": "Južni Most", "sentiment": 0}
+  ]
+}

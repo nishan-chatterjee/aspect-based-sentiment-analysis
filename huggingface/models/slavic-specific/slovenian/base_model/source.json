@@ -1,0 +1,7 @@
+{
+  "model": "slavic-specific",
+  "language": "slovenian",
+  "upstream_base_model": "EMBEDDIA/sloberta",
+  "purpose": "Tokenizer and architecture configuration for offline checkpoint reconstruction",
+  "contains_upstream_model_weights": false
+}

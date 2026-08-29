@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "bertic",
+  "language": "hbs",
+  "prompt_variant": "masked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "paper-original-audited",
+  "behavioral_parity_with_paper": true,
+  "source_sha256": "8faa3cc055b48db609985c41dba1c4c44c210696e1da3c152679937dc19e35f7",
+  "program_sha256": "58182700928580762c0dc763e5980a5162273c97624d7ce9ddd1bbac60608625",
+  "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/masked/slavic_specific_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": false
+  }
+}

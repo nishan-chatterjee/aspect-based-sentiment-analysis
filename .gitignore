@@ -1,0 +1,49 @@
+# Python and notebook runtime files
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.ipynb_checkpoints/
+
+# Local environments and editor state
+.venv/
+venv/
+.env
+.env.*
+.vscode/
+.idea/
+
+# Real datasets are obtained separately and are never committed.
+data/hbs/*
+data/sl/*
+!data/hbs/.gitkeep
+!data/sl/.gitkeep
+
+# User-trained checkpoints and run artifacts.
+models/*
+!models/README.md
+runs/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# Exact DSPy programs may contain optimized examples from restricted data.
+# Put originals here; only separately audited programs belong in public paths.
+selective-deferral-programs/private-originals/
+selective-deferral-programs/**/*.private.json
+
+# Record-level outputs may reproduce source text.
+*_predictions.json
+*-predictions.json
+predictions.json
+!examples/synthetic/predictions.json
+*_calibration_predictions.json
+*_shard-*.json
+
+# Service/runtime state
+*.log
+*.db
+*.sqlite*
+.dspy_cache*/

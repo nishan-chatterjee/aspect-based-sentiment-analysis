@@ -1,0 +1,55 @@
+{
+  "notice": "Teh deset člankov je bilo strojno ustvarjenih izključno za hiter preizkus sklepanja. Besedila niso vzeta iz zbirke AspectBench ali kateregakoli zasebnega korpusa, ne predstavljajo porazdelitve objavljenih podatkov in niso primerna za vrednotenje modelov.",
+  "records": [
+    {
+      "variety": "slovenian",
+      "article": "Občinska uprava je po treh mesecih objavila vmesno poročilo o sodelovanju s podjetjem <aspect>Jutranja Iskra</aspect>. Sistem za naročanje je obdelal pričakovano število vlog, stroški pa so ostali znotraj prvotnega proračuna. Predstavniki <aspect>Jutranje Iskre</aspect> so napovedali manjšo tehnično posodobitev, vendar datum izvedbe še ni potrjen. Komisija zato ni predlagala niti razširitve niti prekinitve pogodbe in bo rezultate znova pregledala ob koncu leta.",
+      "sentiment": 0
+    },
+    {
+      "variety": "slovenian",
+      "article": "Kupci so v šesttedenskem preizkusu uporabljali dostavno storitev podjetja <aspect>Modri Gaj</aspect> na mestnih in podeželskih naslovih. Večina paketov je prispela pred napovedanim rokom, obvestila o dostavi pa so bila jasna in pravočasna. Ko je pri enem naročilu manjkal del naslova, je podpora <aspect>Modrega Gaja</aspect> težavo rešila še isti dan. Sodelujoči uporabniki so posebej pohvalili prijazne voznike in pregledno spremljanje pošiljk.",
+      "sentiment": 1
+    },
+    {
+      "variety": "slovenian",
+      "article": "Prebivalci treh naselij so se pritožili zaradi ponavljajočih se prekinitev storitve ponudnika <aspect>Zeleni Most</aspect>. Spletna stran je več ur prikazovala, da sistem deluje normalno, čeprav uporabniki niso mogli dostopati do svojih računov. Telefonska pomoč <aspect>Zelenega Mostu</aspect> je podajala nasprotujoča si pojasnila in ni navedla predvidenega časa odprave napake. Potrošniška organizacija je zato zahtevala javno poročilo o incidentu in ustrezno nadomestilo naročnikom.",
+      "sentiment": -1
+    },
+    {
+      "variety": "slovenian",
+      "article": "Raziskovalni inštitut je v letnem pregledu primerjal poslovne rezultate družbe <aspect>Srebrna Pot</aspect> z drugimi ponudniki v panogi. Prihodki so ostali blizu ravni prejšnjega leta, število zaposlenih pa se ni bistveno spremenilo. Vodstvo <aspect>Srebrne Poti</aspect> je predstavilo načrt prenove poslovalnic, vendar brez natančnega časovnega razporeda ali ocene naložbe. Analitiki so zato ohranili nevtralno oceno in bodo počakali na naslednje četrtletno poročilo.",
+      "sentiment": 0
+    },
+    {
+      "variety": "slovenian",
+      "article": "Prostovoljci so med vikendom preizkusili novo aplikacijo organizacije <aspect>Severni Val</aspect> za usklajevanje pomoči starejšim. Prijava je bila preprosta, naloge so bile razložene razumljivo, opozorila o spremembah pa so prispela brez zamude. Razvojna skupina <aspect>Severnega Vala</aspect> je manjšo napako pri zemljevidu odpravila nekaj ur po prijavi. Koordinatorji so ocenili, da jim je orodje prihranilo veliko časa, in ga želijo uporabljati tudi v prihodnjih akcijah.",
+      "sentiment": 1
+    },
+    {
+      "variety": "slovenian",
+      "article": "Potniki so v petek zvečer več ur čakali na informacije prevoznika <aspect>Hitra Zvezda</aspect> o odpovedanih povezavah. Elektronski vozni red je še naprej prikazoval odhode, ki jih ni bilo, osebje na postaji pa ni prejelo nadomestnega razporeda. Obvestilo <aspect>Hitre Zvezde</aspect> je bilo objavljeno šele po koncu prometne konice in ni pojasnilo možnosti vračila vozovnic. Združenje potnikov je ravnanje označilo za nesprejemljivo in napovedalo uradno pritožbo.",
+      "sentiment": -1
+    },
+    {
+      "variety": "slovenian",
+      "article": "Neodvisni center je objavil primerjavo cen in hitrosti storitev podjetja <aspect>Bela Reka</aspect> v osmih občinah. Ponudba je bila pri mesečni naročnini blizu tržnega povprečja, pri odzivnem času podpore pa nekoliko boljša od povprečja. Uprava <aspect>Bele Reke</aspect> je napovedala nov uporabniški portal, vendar njegove funkcije še niso bile predstavljene. Avtorji poročila niso ugotovili pomembnega napredka ali poslabšanja glede na prejšnje merjenje.",
+      "sentiment": 0
+    },
+    {
+      "variety": "slovenian",
+      "article": "Lokalna skupnost je zaključila prenovo knjižnice, pri kateri je material brezplačno prispevalo podjetje <aspect>Topla Streha</aspect>. Njegovi zaposleni so prostovoljcem pomagali pri montaži polic in pred odprtjem pregledali varnost celotne opreme. Ko je bilo treba zamenjati poškodovano ploščo, jo je ekipa <aspect>Tople Strehe</aspect> dostavila naslednje jutro brez dodatnih stroškov. Županja je pohvalila kakovost izvedbe, podjetje pa je napovedalo še podporo jesenskim bralnim delavnicam.",
+      "sentiment": 1
+    },
+    {
+      "variety": "slovenian",
+      "article": "Nadzorni organ je po več prijavah pregledal obračunavanje storitev družbe <aspect>Mirni Krog</aspect>. Ugotovil je, da so nekateri uporabniki prejeli podvojene račune, navodila za vračilo denarja pa so bila nejasna. Družba <aspect>Mirnega Kroga</aspect> je napako priznala, vendar do dogovorjenega roka ni povrnila vseh zneskov in strank ni redno obveščala. Zveza potrošnikov je zato zahtevala hitrejšo obravnavo zahtevkov in natančen seznam prizadetih računov.",
+      "sentiment": -1
+    },
+    {
+      "variety": "slovenian",
+      "article": "Tehnološko podjetje <aspect>Sončna Nit</aspect> je po polletnem preizkusu predstavilo sistem za varčnejšo rabo energije v javnih stavbah. Pilotne občine poročajo o nižji porabi, preglednejšem spremljanju stroškov in razumljivih mesečnih poročilih. Med preizkusom so se pojavile težave pri povezovanju starejših merilnikov, vendar jih je razvojna ekipa <aspect>Sončne Niti</aspect> odpravila pred javno objavo. Sodelujoče ustanove so pohvalile odzivnost podpore, podjetje pa bo rešitev naslednje leto ponudilo še šolam in zdravstvenim domovom.",
+      "sentiment": 1
+    }
+  ]
+}

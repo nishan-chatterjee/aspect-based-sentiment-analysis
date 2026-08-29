@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "sloberta",
+  "language": "sl",
+  "prompt_variant": "unmasked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "paper-original-audited",
+  "behavioral_parity_with_paper": true,
+  "source_sha256": "0848108a90f78b54b5d27f805ad16adaf7b7df64106cac4113775bcbe5a7d64f",
+  "program_sha256": "04115ea980ca52efc810e1b83bb4f57a1a378761e500442bbb403f162b145f64",
+  "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/unmasked/slavic_specific_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": false
+  }
+}

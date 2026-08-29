@@ -1,0 +1,61 @@
+{
+  "model": "slavic-specific",
+  "entries": [
+    {
+      "model": "slavic-specific",
+      "language": "hbs",
+      "mode": "masked",
+      "validation_macro_f1": 0.9151353276491324,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "classla/bcms-bertic",
+      "weight_path": "slavic-specific/hbs/masked.pt",
+      "status": "existing",
+      "size": 442555219,
+      "sha256": "09a5ef9aa704535145e35b52db88aa9fa4108ec71c8a669ddbb5575f27417b70",
+      "tensor_count": 201
+    },
+    {
+      "model": "slavic-specific",
+      "language": "hbs",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.9250658853407349,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "classla/bcms-bertic",
+      "weight_path": "slavic-specific/hbs/unmasked.pt",
+      "status": "existing",
+      "size": 442558893,
+      "sha256": "918c1fdad79ec5911ebde16b90a00651c9d7b0ab02dbff36005490c95586f3da",
+      "tensor_count": 201
+    },
+    {
+      "model": "slavic-specific",
+      "language": "slovenian",
+      "mode": "masked",
+      "validation_macro_f1": 0.8545257213567837,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "EMBEDDIA/sloberta",
+      "weight_path": "slavic-specific/slovenian/masked.pt",
+      "status": "existing",
+      "size": 442573651,
+      "sha256": "1f0c8b88ac36f4d4dfe34322e37f8c12bbc87ef842ca8142265ba60b6066668b",
+      "tensor_count": 201
+    },
+    {
+      "model": "slavic-specific",
+      "language": "slovenian",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.8638678818708625,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "EMBEDDIA/sloberta",
+      "weight_path": "slavic-specific/slovenian/unmasked.pt",
+      "status": "existing",
+      "size": 442577325,
+      "sha256": "489572e0225aa8d9c58eb90dfb344c97cd5902b4342cfe1e99a893785651a8d6",
+      "tensor_count": 201
+    }
+  ]
+}

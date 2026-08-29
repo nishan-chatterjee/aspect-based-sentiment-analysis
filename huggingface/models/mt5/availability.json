@@ -1,0 +1,61 @@
+{
+  "model": "mt5",
+  "entries": [
+    {
+      "model": "mt5",
+      "language": "hbs",
+      "mode": "masked",
+      "validation_macro_f1": 0.889948707182005,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "google/mt5-base",
+      "weight_path": "mt5/hbs/masked.pt",
+      "status": "existing",
+      "size": 2329724000,
+      "sha256": "40c2d785bb6eda83cfb864017f44833ba81623ed6e84c39f7b1be74ae809cf41",
+      "tensor_count": 284
+    },
+    {
+      "model": "mt5",
+      "language": "hbs",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.8942548569348862,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "google/mt5-base",
+      "weight_path": "mt5/hbs/unmasked.pt",
+      "status": "existing",
+      "size": 2329730972,
+      "sha256": "4686dd065d8bd2bfeff48a685dd5ac5d64c0b3cd41b14c90a331d7bb01c96077",
+      "tensor_count": 284
+    },
+    {
+      "model": "mt5",
+      "language": "slovenian",
+      "mode": "masked",
+      "validation_macro_f1": 0.8012255203557931,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "google/mt5-base",
+      "weight_path": "mt5/slovenian/masked.pt",
+      "status": "existing",
+      "size": 2329724000,
+      "sha256": "c383614afc2e6950fee196bd38e292279346e1961ef55b3af7ad1d22762bd458",
+      "tensor_count": 284
+    },
+    {
+      "model": "mt5",
+      "language": "slovenian",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.8070351391836906,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "google/mt5-base",
+      "weight_path": "mt5/slovenian/unmasked.pt",
+      "status": "existing",
+      "size": 2329730972,
+      "sha256": "f9d0567df635b7c99c291371f4f5266bc209d3450b326c83f7e1c8ae34fb5ec9",
+      "tensor_count": 284
+    }
+  ]
+}

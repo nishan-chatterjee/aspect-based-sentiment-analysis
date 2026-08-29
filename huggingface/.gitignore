@@ -1,0 +1,7 @@
+models/**/*.pt
+validation-report.json
+validation-runs/
+logs/
+**/__pycache__/
+**/*.pyc
+.cache/

@@ -1,0 +1,7 @@
+{
+  "model": "longformer",
+  "language": "hbs",
+  "upstream_base_model": "markussagen/xlm-roberta-longformer-base-4096",
+  "purpose": "Tokenizer and architecture configuration for offline checkpoint reconstruction",
+  "contains_upstream_model_weights": false
+}

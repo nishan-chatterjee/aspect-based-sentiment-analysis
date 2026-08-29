@@ -1,0 +1,10 @@
+{
+  "id": "hbs",
+  "display_name": "HBS",
+  "access": "clarin-authenticated",
+  "train_val_template": "hbs_train_val_{split}.json",
+  "test_file": "hbs_test.json",
+  "aspects_file": "hbs_aspects.json",
+  "split_indices": [0, 1, 2],
+  "required_fields": ["uuid", "article", "aspect", "sentiment"]
+}

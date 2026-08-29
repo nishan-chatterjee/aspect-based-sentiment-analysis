@@ -1,0 +1,329 @@
+{
+  "schema_version": 1,
+  "programs": [
+    {
+      "schema_version": 1,
+      "model": "bertic",
+      "language": "hbs",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "8faa3cc055b48db609985c41dba1c4c44c210696e1da3c152679937dc19e35f7",
+      "program_sha256": "58182700928580762c0dc763e5980a5162273c97624d7ce9ddd1bbac60608625",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/masked/slavic_specific_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "bertic",
+      "language": "hbs",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "5b90802ed05c7cf0eb1df67c4c1e4ed5e4ab591ccf31dddd103a4f315f9f69d4",
+      "program_sha256": "cbb3045ad1f96f04e5f8bd857b4b02d9da3714d30c2056a6cc067df1894baf07",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/unmasked/slavic_specific_masked/medium/optimized_program_serbian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "han-xlmr",
+      "language": "hbs",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "sanitized-post-release",
+      "behavioral_parity_with_paper": false,
+      "source_sha256": "a50846d864630e1aac10701c4ad7a938c60e861d5960e7e595a77b6704324fec",
+      "program_sha256": "8afc7280a32d1f6d78533a69133650196ebcbae8307d7f19200def9a47d87d21",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/masked/han_xlmr_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": true
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "han-xlmr",
+      "language": "hbs",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "d26de0f1e63a9a8f30148fbf3aeaf5f80d497d89c3dba4bb010f6f13755f9fb7",
+      "program_sha256": "33b1d9f62c769b56313c913aa6b20264759ad478ac75ad315fea29e16951d055",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/unmasked/han_xlmr_masked/medium/optimized_program_serbian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "longformer",
+      "language": "hbs",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "5b90802ed05c7cf0eb1df67c4c1e4ed5e4ab591ccf31dddd103a4f315f9f69d4",
+      "program_sha256": "cbb3045ad1f96f04e5f8bd857b4b02d9da3714d30c2056a6cc067df1894baf07",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/masked/longformer_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "longformer",
+      "language": "hbs",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "330884bc139302839fc407ce0e85b8048db3148908e10722334ef103e217df44",
+      "program_sha256": "0cb4a2ddae87d9636b66838f717acfd406be03d129a228413f9e44412a3045ef",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/unmasked/longformer_masked/medium/optimized_program_serbian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "mdeberta-v3",
+      "language": "hbs",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "8fcb188f42319b9efb08761a95db58ebaf9500b9cdeb715c3810d321f9261f94",
+      "program_sha256": "84a256a1e91f135eec717dad54e4b716bc68c3523a47ce54a97497dcd535b38e",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/masked/mdeberta_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "mdeberta-v3",
+      "language": "hbs",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "4e3b169cde7af58611a82ba0ec9d784b8d2957c22c02d7fa71b403f6b11549e9",
+      "program_sha256": "0196cfe59032e337ea95eea096a8e3a4012dea73f02afd682dbdb6498b72be7e",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/unmasked/mdeberta_masked/medium/optimized_program_serbian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "xlmr",
+      "language": "hbs",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "124fc75185be8ef43425077920f51d4d3dcaaeb639499d939c8385705b3e9408",
+      "program_sha256": "33da9932c32e33162411af2c0dd2f932cdc169807a6e4ece44eaa80da32366a4",
+      "source_locator": "additional-tasks/uncertainty/llm-selective-deferral/serbian/masked/xlmr_truncated_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "xlmr",
+      "language": "hbs",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "022f9d22044e2fc6166282d9dab17ce2a9d3408614936bc8494fd5b0842c2db7",
+      "program_sha256": "aa849ec8f41fa2090c66940204166da2d1c63638638ed980428d850640d48ddb",
+      "source_locator": "additional-tasks/uncertainty/llm-selective-deferral/serbian/unmasked/xlmr_truncated_masked/medium/optimized_program_serbian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "han-xlmr",
+      "language": "sl",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "sanitized-post-release",
+      "behavioral_parity_with_paper": false,
+      "source_sha256": "207e4164e22521b5bbbcae8d683080ac1f95a68b6f2c94c94c916b8282845001",
+      "program_sha256": "8afc7280a32d1f6d78533a69133650196ebcbae8307d7f19200def9a47d87d21",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/masked/han_xlmr_masked/medium/optimized_program_slovenian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": true
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "han-xlmr",
+      "language": "sl",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "sanitized-post-release",
+      "behavioral_parity_with_paper": false,
+      "source_sha256": "32bfd15d92ef1e88e38ec34eeded8cbdf59fb2fd5365847f0c03edae5c7fd564",
+      "program_sha256": "8afc7280a32d1f6d78533a69133650196ebcbae8307d7f19200def9a47d87d21",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/unmasked/han_xlmr_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": true
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "longformer",
+      "language": "sl",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "9f6d3ccf5b11e38d9959f535d3a01e1dc1e0c1f841e10685f0d9517134a10d5e",
+      "program_sha256": "f64fc1ae012bf71eca8dc016adc05021019923bd57cf410bd322bf124f9e1ea3",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/masked/longformer_masked/medium/optimized_program_slovenian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "longformer",
+      "language": "sl",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "sanitized-post-release",
+      "behavioral_parity_with_paper": false,
+      "source_sha256": "ec64dd7f34215c6fe0eb451ef20e4523801ff5056baf027fce860d074071dce6",
+      "program_sha256": "8afc7280a32d1f6d78533a69133650196ebcbae8307d7f19200def9a47d87d21",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/unmasked/longformer_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": true
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "sloberta",
+      "language": "sl",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "8dd7c5f0473c6cb83e4de801bd23d19e55c023db543464e205b3b6c79446543b",
+      "program_sha256": "3d081cee55aaadfbdf2d044949edc99078e380b47b5612766134964e53e9eda2",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/masked/slavic_specific_masked/medium/optimized_program_slovenian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "sloberta",
+      "language": "sl",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "0848108a90f78b54b5d27f805ad16adaf7b7df64106cac4113775bcbe5a7d64f",
+      "program_sha256": "04115ea980ca52efc810e1b83bb4f57a1a378761e500442bbb403f162b145f64",
+      "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/unmasked/slavic_specific_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "xlmr",
+      "language": "sl",
+      "prompt_variant": "masked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "567375d819ee57bc4684ee735870e013cc8639e45da8b73dd9b1cb6588809b69",
+      "program_sha256": "d4eedc5f7c8b2f63ec84c808f3bb281e9b3da41a43aed1cf18d8e27cc4f6587d",
+      "source_locator": "additional-tasks/uncertainty/llm-selective-deferral/slovenian/masked/xlmr_truncated_masked/medium/optimized_program_slovenian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    },
+    {
+      "schema_version": 1,
+      "model": "xlmr",
+      "language": "sl",
+      "prompt_variant": "unmasked",
+      "optimizer": "MIPROv2-medium",
+      "release_status": "paper-original-audited",
+      "behavioral_parity_with_paper": true,
+      "source_sha256": "664fab4af294be82b78ee8ab8bbc12fe11ae1fdd6e2ae50c3eecd46144849a7c",
+      "program_sha256": "452a490b71d824272e316d2d1b3931a08e80a08856b68e1b9b0710b4f6a2fcd3",
+      "source_locator": "additional-tasks/uncertainty/llm-selective-deferral/slovenian/unmasked/xlmr_truncated_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+      "privacy_audit": {
+        "demos_cleared": true,
+        "traces_cleared": true,
+        "train_cleared": true,
+        "embedded_example_removed": false
+      }
+    }
+  ]
+}

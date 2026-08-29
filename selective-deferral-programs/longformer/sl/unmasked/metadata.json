@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "longformer",
+  "language": "sl",
+  "prompt_variant": "unmasked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "sanitized-post-release",
+  "behavioral_parity_with_paper": false,
+  "source_sha256": "ec64dd7f34215c6fe0eb451ef20e4523801ff5056baf027fce860d074071dce6",
+  "program_sha256": "8afc7280a32d1f6d78533a69133650196ebcbae8307d7f19200def9a47d87d21",
+  "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/unmasked/longformer_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": true
+  }
+}

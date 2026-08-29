@@ -1,0 +1,64 @@
+{
+  "predict": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Evaluate the primary expert's sentiment prediction for a given article and aspect. Consider the following steps:\n\n1. **Review the Article**: Carefully read the article to understand the context and any specific mentions of the target aspect.\n2. **Assess the Primary Expert**: Evaluate the primary expert's prediction, confidence, and uncertainty metrics.\n3. **Consider Auxiliary Experts**: Review the predictions and confidence levels of auxiliary experts to see if they support, contradict, or are neutral towards the primary expert's prediction.\n4. **Analyze the Routing Context**: Understand the reason why the item was selected for possible deferral, which can provide additional context for the decision.\n5. **Generate Reasoning**: Provide a brief, evidence-based explanation of whether the primary expert's prediction should be kept, overridden, or if the decision should be abstained from due to ambiguity.\n6. **Determine the Action**: Decide whether to `keep_plm` (keep the primary expert's prediction), `override` (change the prediction), or `abstain_uncertain` (refrain from making a decision).\n7. **Output the Final Sentiment**: If the action is `keep_plm`, the final sentiment is the primary expert's prediction. If the action is `override`, the final sentiment is a new label based on the reasoning.\n\n**Guidelines**:\n- **Keep the Primary Prediction** when the primary expert is confident and the article evidence supports the prediction, and the auxiliary experts agree.\n- **Override the Primary Prediction** only when there is clear evidence from the article or a strong consensus from the auxiliary experts that contradicts the primary expert.\n- **Abstain from Making a Decision** when the primary expert's confidence is low, the article evidence is ambiguous, or there is significant disagreement among the auxiliary experts.\n\n**Example**:\n- **Article**: \"proširena mogućnost plaćanja računa/faktura skeniranjem nbs ips qr kôda\"\n- **Aspect**: \"Telekom Srbija\"\n- **Primary Expert**: \"Longformer Masked\"\n- **Primary Prediction**: \"neutral\"\n- **Primary Probabilities**: \"negative=0.0004, neutral=0.6316, positive=0.3680\"\n- **Primary Uncertainty**: \"confidence=0.632; predictive_entropy=0.954; expected_entropy=0.125; mutual_information=0.829; votes: negative=0/30, neutral=19/30, positive=11/30\"\n- **Auxiliary Experts**: \"HAN-XLMR Masked: prediction=neutral; probabilities=(negative=0.0003, neutral=0.6070, positive=0.3928); uncertainty=(confidence=0.667; predictive_entropy=0.970; expected_entropy=0.000; mutual_information=0.000; votes: negative=0/30, neutral=20/30, positive=10/30)\"\n- **mDeBERTa-v3 Masked**: \"prediction=neutral; probabilities=(negative=0.0002, neutral=0.6653, positive=0.3345); uncertainty=(confidence=0.665; predictive_entropy=0.922; expected_entropy=0.047; mutual_information=0.876; votes: negative=0/30, neutral=20/30, positive=10/30)\"\n- **BERTic Masked**: \"prediction=neutral; probabilities=(negative=0.0004, neutral=0.6764, positive=0.3232); uncertainty=(confidence=0.676; predictive_entropy=0.913; expected_entropy=0.075; mutual_information=0.838; votes: negative=0/30, neutral=20/30, positive=10/30)\"\n- **Routing Context**: \"Selected for possible deferral because primary_confidence=0.632, primary_entropy=0.954, auxiliary_disagreement=0/3, hard_score=0.607. Choose keep_plm when primary is supported; override only with clear evidence; abstain_uncertain when evidence is insufficient for automatic override.\"\n- **Reasoning**: \"The primary expert predicts 'neutral' with 63.2% confidence. The article explicitly mentions Telekom Srbija as one of the companies utilizing the NBS IPS QR code payment system. Auxiliary experts all predict 'neutral' with similar probabilities and confidence levels. The vote distribution across experts is consistently skewed towards neutral, with no votes for negative sentiment. Therefore, the primary prediction is well-supported by both",
+      "fields": [
+        {
+          "prefix": "Article:",
+          "description": "The document text. The target aspect may be explicit or replaced by [MASK]."
+        },
+        {
+          "prefix": "Aspect:",
+          "description": "The target aspect or [MASK]."
+        },
+        {
+          "prefix": "Primary Expert:",
+          "description": "Primary expert whose prediction is being audited."
+        },
+        {
+          "prefix": "Primary Prediction:",
+          "description": "Primary expert sentiment label."
+        },
+        {
+          "prefix": "Primary Probabilities:",
+          "description": "Primary expert probabilities for negative, neutral, positive."
+        },
+        {
+          "prefix": "Primary Uncertainty:",
+          "description": "Primary expert confidence, entropy, vote distribution, and threshold hints."
+        },
+        {
+          "prefix": "Auxiliary Experts:",
+          "description": "Other expert predictions, probabilities, uncertainty, and agreement summary."
+        },
+        {
+          "prefix": "Routing Context:",
+          "description": "Why this item was selected for possible deferral."
+        },
+        {
+          "prefix": "Reasoning:",
+          "description": "Brief evidence-based reasoning. State whether evidence supports keeping, overriding, or abstaining."
+        },
+        {
+          "prefix": "Action:",
+          "description": "Decision: keep_plm, override, or abstain_uncertain."
+        },
+        {
+          "prefix": "Sentiment:",
+          "description": "Final sentiment if action is override; otherwise repeat the primary label."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.11",
+      "dspy": "3.2.1",
+      "cloudpickle": "3.1"
+    }
+  }
+}

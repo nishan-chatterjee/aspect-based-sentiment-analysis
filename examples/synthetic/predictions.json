@@ -1,0 +1,8 @@
+[
+  {"uuid": "test-1", "aspect": "Modri Gaj", "sentiment": 1, "prediction": 1},
+  {"uuid": "test-2", "aspect": "Modri Gaj", "sentiment": -1, "prediction": 0},
+  {"uuid": "test-3", "aspect": "Južni Most", "sentiment": 0, "prediction": 0},
+  {"uuid": "test-4", "aspect": "Nova Iskra", "sentiment": -1, "prediction": -1},
+  {"uuid": "test-5", "aspect": "Nova Iskra", "sentiment": 1, "prediction": 0},
+  {"uuid": "test-6", "aspect": "Nova Iskra", "sentiment": 0, "prediction": 0}
+]

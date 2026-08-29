@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use AspectBench, please cite the accompanying article."
+title: "AspectBench: Document-Level Aspect-Based Sentiment Analysis"
+type: software
+authors:
+  - family-names: Chatterjee
+    given-names: Nishan
+repository-code: "https://github.com/nishan-chatterjee/aspect-based-sentiment-analysis"
+url: "https://github.com/nishan-chatterjee/aspect-based-sentiment-analysis"
+preferred-citation:
+  type: article
+  title: "Evaluating Fine-Tuned, Embedding-Based, and Zero-Shot Models for Aspect-Based Sentiment Analysis in South Slavic News"
+  doi: "10.3389/frai.2026.1844418"

@@ -1,0 +1,61 @@
+{
+  "model": "mdeberta-v3",
+  "entries": [
+    {
+      "model": "mdeberta-v3",
+      "language": "hbs",
+      "mode": "masked",
+      "validation_macro_f1": 0.9150760776163819,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "microsoft/mdeberta-v3-base",
+      "weight_path": "mdeberta-v3/hbs/masked.pt",
+      "status": "existing",
+      "size": 1115321808,
+      "sha256": "a9fd26a11a0b12dfa7b2bb00e7edb7b4f1f3a51c5ac423a8b98eb7ce27fb8469",
+      "tensor_count": 202
+    },
+    {
+      "model": "mdeberta-v3",
+      "language": "hbs",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.9190600266461267,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "microsoft/mdeberta-v3-base",
+      "weight_path": "mdeberta-v3/hbs/unmasked.pt",
+      "status": "existing",
+      "size": 1115328556,
+      "sha256": "cc1743d44aad3729c7d5dbcad73be13b8369b69d70c9fb16b005ce251f08d443",
+      "tensor_count": 202
+    },
+    {
+      "model": "mdeberta-v3",
+      "language": "slovenian",
+      "mode": "masked",
+      "validation_macro_f1": 0.8242447008523016,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "microsoft/mdeberta-v3-base",
+      "weight_path": "mdeberta-v3/slovenian/masked.pt",
+      "status": "existing",
+      "size": 1115321808,
+      "sha256": "328786c619ecfe9e8bcfe25a3648357e4cfb8e8e66563c44ea87a8f4c2a8df9e",
+      "tensor_count": 202
+    },
+    {
+      "model": "mdeberta-v3",
+      "language": "slovenian",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.8223988954252537,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "microsoft/mdeberta-v3-base",
+      "weight_path": "mdeberta-v3/slovenian/unmasked.pt",
+      "status": "existing",
+      "size": 1115328556,
+      "sha256": "5196cbbaed16fbce2b3a81d708bfd911439a6e7dc9ea78fd4a110528575201b3",
+      "tensor_count": 202
+    }
+  ]
+}

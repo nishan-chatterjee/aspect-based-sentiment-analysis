@@ -1,0 +1,7 @@
+{
+  "model": "han-xlmr",
+  "language": "hbs",
+  "upstream_base_model": "FacebookAI/xlm-roberta-base",
+  "purpose": "Tokenizer and architecture configuration for offline checkpoint reconstruction",
+  "contains_upstream_model_weights": false
+}

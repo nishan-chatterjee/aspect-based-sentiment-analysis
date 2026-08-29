@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "longformer",
+  "language": "sl",
+  "prompt_variant": "masked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "paper-original-audited",
+  "behavioral_parity_with_paper": true,
+  "source_sha256": "9f6d3ccf5b11e38d9959f535d3a01e1dc1e0c1f841e10685f0d9517134a10d5e",
+  "program_sha256": "f64fc1ae012bf71eca8dc016adc05021019923bd57cf410bd322bf124f9e1ea3",
+  "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/masked/longformer_masked/medium/optimized_program_slovenian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": false
+  }
+}

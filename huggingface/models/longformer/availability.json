@@ -1,0 +1,61 @@
+{
+  "model": "longformer",
+  "entries": [
+    {
+      "model": "longformer",
+      "language": "hbs",
+      "mode": "masked",
+      "validation_macro_f1": 0.9235562204487023,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "markussagen/xlm-roberta-longformer-base-4096",
+      "weight_path": "longformer/hbs/masked.pt",
+      "status": "existing",
+      "size": 1208343099,
+      "sha256": "6576c997ebfe143f47d8f34a2034dbb421fd4169e07cd045e2d00f2bfc93c7f3",
+      "tensor_count": 273
+    },
+    {
+      "model": "longformer",
+      "language": "hbs",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.9237049934972151,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "markussagen/xlm-roberta-longformer-base-4096",
+      "weight_path": "longformer/hbs/unmasked.pt",
+      "status": "existing",
+      "size": 1208346917,
+      "sha256": "3bbd28b64b0afb4aa89b88001edfbe44223becd989c772e7fb19ba96249da185",
+      "tensor_count": 273
+    },
+    {
+      "model": "longformer",
+      "language": "slovenian",
+      "mode": "masked",
+      "validation_macro_f1": 0.8349811751435684,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "markussagen/xlm-roberta-longformer-base-4096",
+      "weight_path": "longformer/slovenian/masked.pt",
+      "status": "existing",
+      "size": 1208343099,
+      "sha256": "bdefd79d71efc99984caa401217653555f88d6cde3ed2c96a2e4149c7166d7ef",
+      "tensor_count": 273
+    },
+    {
+      "model": "longformer",
+      "language": "slovenian",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.8250958292470165,
+      "available": true,
+      "unavailable_reason": null,
+      "base_model": "markussagen/xlm-roberta-longformer-base-4096",
+      "weight_path": "longformer/slovenian/unmasked.pt",
+      "status": "existing",
+      "size": 1208346917,
+      "sha256": "fdb7c40617d3faa99b4b7080df78827c5ef8beb5f14fa0a3fc6ebfdc54691cfc",
+      "tensor_count": 273
+    }
+  ]
+}

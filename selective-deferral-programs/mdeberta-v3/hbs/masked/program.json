@@ -1,0 +1,64 @@
+{
+  "predict": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Decide whether to keep, override, or abstain from the primary expert's sentiment prediction for the given article. \n\n1. **Evaluate the Primary Expert's Prediction:**\n   - Consider the primary expert's confidence and uncertainty measures.\n   - Assess whether the primary expert's prediction is supported by the article's content and evidence.\n\n2. **Consider the Auxiliary Experts:**\n   - Review the predictions, probabilities, and uncertainty measures from the auxiliary experts.\n   - Determine if there is a consensus among the auxiliary experts that contradicts the primary expert's prediction.\n\n3. **Review the Article Content:**\n   - Analyze the article's text to understand the context and evidence related to the target aspect.\n   - Look for explicit or implicit sentiments that support or contradict the primary expert's prediction.\n\n4. **Make a Decision:**\n   - **Keep the Primary Prediction:** If the primary expert is confident and supported by the article evidence, and there is no clear contradiction from auxiliary experts.\n   - **Override the Primary Prediction:** If the article evidence or auxiliary expert consensus clearly contradicts the primary expert's prediction.\n   - **Abstain from Decision:** If the case is too ambiguous for an automatic override, and the evidence is insufficient to make a clear decision.\n\n5. **Generate the Output:**\n   - **Reasoning:** Provide a brief, evidence-based explanation of why you decided to keep, override, or abstain from the primary prediction.\n   - **Action:** Specify the action (keep_plm, override, or abstain_uncertain).\n   - **Sentiment:** If the action is to keep, repeat the primary prediction. If the action is to override, provide the new sentiment label.\n\nEnsure your reasoning is clear and supported by the evidence from the article and expert predictions.",
+      "fields": [
+        {
+          "prefix": "Article:",
+          "description": "The document text. The target aspect may be explicit or replaced by [MASK]."
+        },
+        {
+          "prefix": "Aspect:",
+          "description": "The target aspect or [MASK]."
+        },
+        {
+          "prefix": "Primary Expert:",
+          "description": "Primary expert whose prediction is being audited."
+        },
+        {
+          "prefix": "Primary Prediction:",
+          "description": "Primary expert sentiment label."
+        },
+        {
+          "prefix": "Primary Probabilities:",
+          "description": "Primary expert probabilities for negative, neutral, positive."
+        },
+        {
+          "prefix": "Primary Uncertainty:",
+          "description": "Primary expert confidence, entropy, vote distribution, and threshold hints."
+        },
+        {
+          "prefix": "Auxiliary Experts:",
+          "description": "Other expert predictions, probabilities, uncertainty, and agreement summary."
+        },
+        {
+          "prefix": "Routing Context:",
+          "description": "Why this item was selected for possible deferral."
+        },
+        {
+          "prefix": "Reasoning:",
+          "description": "Brief evidence-based reasoning. State whether evidence supports keeping, overriding, or abstaining."
+        },
+        {
+          "prefix": "Action:",
+          "description": "Decision: keep_plm, override, or abstain_uncertain."
+        },
+        {
+          "prefix": "Sentiment:",
+          "description": "Final sentiment if action is override; otherwise repeat the primary label."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.11",
+      "dspy": "3.2.1",
+      "cloudpickle": "3.1"
+    }
+  }
+}

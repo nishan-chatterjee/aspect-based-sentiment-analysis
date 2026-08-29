@@ -1,0 +1,49 @@
+{
+  "model": "bge-m3-mlp",
+  "entries": [
+    {
+      "model": "bge-m3-mlp",
+      "language": "hbs",
+      "mode": "masked",
+      "validation_macro_f1": 0.8840815245920188,
+      "available": false,
+      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "base_model": "BAAI/bge-m3",
+      "weight_path": "bge-m3-mlp/hbs/masked.pt",
+      "status": "unavailable"
+    },
+    {
+      "model": "bge-m3-mlp",
+      "language": "hbs",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.8894579185247774,
+      "available": false,
+      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "base_model": "BAAI/bge-m3",
+      "weight_path": "bge-m3-mlp/hbs/unmasked.pt",
+      "status": "unavailable"
+    },
+    {
+      "model": "bge-m3-mlp",
+      "language": "slovenian",
+      "mode": "masked",
+      "validation_macro_f1": 0.7514188081139693,
+      "available": false,
+      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "base_model": "BAAI/bge-m3",
+      "weight_path": "bge-m3-mlp/slovenian/masked.pt",
+      "status": "unavailable"
+    },
+    {
+      "model": "bge-m3-mlp",
+      "language": "slovenian",
+      "mode": "unmasked",
+      "validation_macro_f1": 0.7393257242124599,
+      "available": false,
+      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "base_model": "BAAI/bge-m3",
+      "weight_path": "bge-m3-mlp/slovenian/unmasked.pt",
+      "status": "unavailable"
+    }
+  ]
+}

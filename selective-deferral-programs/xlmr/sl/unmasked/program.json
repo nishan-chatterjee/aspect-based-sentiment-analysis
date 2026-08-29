@@ -1,0 +1,64 @@
+{
+  "predict": {
+    "traces": [],
+    "train": [],
+    "demos": [],
+    "signature": {
+      "instructions": "Decide whether to keep the primary expert's sentiment prediction, override it, or abstain from making a decision. Carefully evaluate the article evidence and any available auxiliary expert opinions to support your decision. \n\n1. **Keep the Primary Prediction**: If the primary expert is confident (confidence > 0.6) and the article evidence supports the prediction, keep the primary prediction.\n2. **Override the Prediction**: If the article evidence or auxiliary expert consensus clearly contradicts the primary prediction, override the primary prediction. Provide the new sentiment label and the evidence that supports the override.\n3. **Abstain from Decision**: If the evidence is too ambiguous or there is insufficient support to justify overriding the primary prediction, abstain from making a decision.\n\n**Input Fields**:\n- **Article**: The document text, which may contain the target aspect or have it masked.\n- **Aspect**: The target aspect to be evaluated for sentiment.\n- **Primary Expert**: The primary language model used to make the initial prediction.\n- **Primary Prediction**: The sentiment predicted by the primary expert (negative, neutral, positive).\n- **Primary Probabilities**: The probabilities assigned by the primary expert to each sentiment category.\n- **Primary Uncertainty**: Metrics indicating the confidence and uncertainty of the primary expert's prediction.\n- **Auxiliary Experts**: Predictions and uncertainties from additional expert models, if available.\n- **Routing Context**: The reason why the item was selected for possible deferral, which includes confidence, entropy, and agreement metrics.\n\n**Output Fields**:\n- **Reasoning**: A brief explanation of the evidence-based reasoning for the decision to keep, override, or abstain from the primary expert's prediction.\n- **Action**: The decision made based on the reasoning (keep_plm, override, or abstain_uncertain).\n- **Sentiment**: The final sentiment label. If the action is to override, the final sentiment will differ from the primary prediction. Otherwise, it will repeat the primary label.\n\n**Example**:\n- **Article**: \"priprave za 33. izdajo liffa v polnem teku\"\n- **Aspect**: Telekom Slovenije\n- **Primary Expert**: XLM-R Truncated Masked\n- **Primary Prediction**: neutral\n- **Primary Probabilities**: negative=0.0001, neutral=0.6311, positive=0.3688\n- **Primary Uncertainty**: confidence=0.631; predictive_entropy=0.951; expected_entropy=0.398; mutual_information=0.553; votes: negative=0/30, neutral=18/30, positive=12/30\n- **Auxiliary Experts**: No auxiliary expert available.\n- **Routing Context**: Selected for possible deferral because primary_confidence=0.631, primary_entropy=0.951, auxiliary_disagreement=0/0, hard_score=0.607.\n- **Reasoning**: The primary expert labels Telekom Slovenije as neutral with 63.1% confidence. The text mentions Telekom Slovenije as the main sponsor of the festival and as enabling SMS voting. There's no negative or positive sentiment expressed towards Telekom Slovenije in the text. The auxiliary experts are unavailable, so there's no consensus to consider. Given the neutral sentiment and the lack of contradictory evidence, keeping the primary label seems appropriate.\n- **Action**: keep_plm\n- **Sentiment**: neutral",
+      "fields": [
+        {
+          "prefix": "Article:",
+          "description": "The document text. The target aspect may be explicit or replaced by [MASK]."
+        },
+        {
+          "prefix": "Aspect:",
+          "description": "The target aspect or [MASK]."
+        },
+        {
+          "prefix": "Primary Expert:",
+          "description": "Primary expert whose prediction is being audited."
+        },
+        {
+          "prefix": "Primary Prediction:",
+          "description": "Primary expert sentiment label."
+        },
+        {
+          "prefix": "Primary Probabilities:",
+          "description": "Primary expert probabilities for negative, neutral, positive."
+        },
+        {
+          "prefix": "Primary Uncertainty:",
+          "description": "Primary expert confidence, entropy, vote distribution, and threshold hints."
+        },
+        {
+          "prefix": "Auxiliary Experts:",
+          "description": "Other expert predictions, probabilities, uncertainty, and agreement summary."
+        },
+        {
+          "prefix": "Routing Context:",
+          "description": "Why this item was selected for possible deferral."
+        },
+        {
+          "prefix": "Reasoning:",
+          "description": "Brief evidence-based reasoning. State whether evidence supports keeping, overriding, or abstaining."
+        },
+        {
+          "prefix": "Action:",
+          "description": "Decision: keep_plm, override, or abstain_uncertain."
+        },
+        {
+          "prefix": "Sentiment:",
+          "description": "Final sentiment if action is override; otherwise repeat the primary label."
+        }
+      ]
+    },
+    "lm": null
+  },
+  "metadata": {
+    "dependency_versions": {
+      "python": "3.11",
+      "dspy": "3.2.1",
+      "cloudpickle": "3.1"
+    }
+  }
+}

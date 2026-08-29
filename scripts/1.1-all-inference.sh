@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: $0 --gpus 0,1 --models all|xlmr,longformer --run-prefix ID -- [infer flags]" >&2
+}
+
+GPUS=""
+MODELS="all"
+RUN_PREFIX=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --gpus) GPUS="$2"; shift 2 ;;
+    --models) MODELS="$2"; shift 2 ;;
+    --run-prefix) RUN_PREFIX="$2"; shift 2 ;;
+    --) shift; break ;;
+    -h|--help) usage; exit 0 ;;
+    *) usage; exit 2 ;;
+  esac
+done
+[[ -n "$GPUS" && -n "$RUN_PREFIX" ]] || { usage; exit 2; }
+
+DATASET=""
+previous=""
+for argument in "$@"; do
+  [[ "$previous" == "--dataset" ]] && DATASET="$argument"
+  previous="$argument"
+done
+[[ "$DATASET" == "hbs" || "$DATASET" == "sl" || "$DATASET" == "slovene" || "$DATASET" == "slovenian" ]] || {
+  echo "The forwarded flags must include --dataset hbs|sl." >&2; exit 2;
+}
+ALL_REQUESTED="0"
+if [[ "$MODELS" == "all" ]]; then
+  ALL_REQUESTED="1"
+  if [[ "$DATASET" == "hbs" ]]; then
+    MODELS="xlmr,han-xlmr,longformer,mdeberta-v3,mt5,bertic,bge-m3-mlp"
+  else
+    MODELS="xlmr,han-xlmr,longformer,mdeberta-v3,mt5,sloberta,bge-m3-mlp"
+  fi
+fi
+IFS=',' read -r -a gpu_array <<< "$GPUS"
+IFS=',' read -r -a model_array <<< "$MODELS"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+mkdir -p "models/_runs/_launcher-logs"
+pids=()
+for index in "${!model_array[@]}"; do
+  model="${model_array[$index]}"
+  gpu="${gpu_array[$((index % ${#gpu_array[@]}))]}"
+  log="models/_runs/_launcher-logs/${RUN_PREFIX}-${model}.log"
+  echo "[$model] CUDA device $gpu; log $log"
+  availability_flags=()
+  [[ "$ALL_REQUESTED" == "1" ]] && availability_flags+=(--skip-unavailable)
+  CUDA_VISIBLE_DEVICES="$gpu" python "$SCRIPT_DIR/1.0-models-inference.py" \
+    --models "$model" --run-id "${RUN_PREFIX}-${model}" "${availability_flags[@]}" "$@" >"$log" 2>&1 &
+  pids+=("$!")
+  if (( ${#pids[@]} >= ${#gpu_array[@]} )); then
+    wait "${pids[0]}"
+    pids=("${pids[@]:1}")
+  fi
+done
+for pid in "${pids[@]}"; do wait "$pid"; done

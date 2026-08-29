@@ -1,0 +1,60 @@
+{
+  "notice": "These ten articles are machine-generated solely for quick inference testing. They are not copied from the AspectBench or CLARIN datasets, do not represent the released data distribution, and must not be used for model evaluation.",
+  "variety_distribution": {
+    "serbo-croatian": 6,
+    "croatian": 3,
+    "bosnian": 1
+  },
+  "records": [
+    {
+      "variety": "serbo-croatian",
+      "article": "Tokom tromesečnog probnog perioda gradska biblioteka koristila je usluge kompanije <aspect>Mreža Orion</aspect> za povezivanje svojih ogranaka. Izveštaj navodi da je veza uglavnom radila u skladu sa ugovorom, dok su dva kratka prekida otklonjena istog dana. Predstavnici <aspect>Mreže Orion</aspect> dostavili su tehničku dokumentaciju i najavili redovno održavanje, ali biblioteka još nije odlučila da li će produžiti saradnju. Komisija će konačnu odluku doneti nakon poređenja cena sa drugim ponuđačima.",
+      "sentiment": 0
+    },
+    {
+      "variety": "serbo-croatian",
+      "article": "Stanari tri udaljena naselja prošlog meseca testirali su novu dostavnu rutu preduzeća <aspect>Severna Linija</aspect>. Većina paketa stigla je pre najavljenog roka, a korisnici su posebno pohvalili jasne poruke o vremenu dolaska. Podrška <aspect>Severne Linije</aspect> odgovorila je i tokom vikenda kada je jedna adresa bila pogrešno unesena. Mesna zajednica je zbog dobrih rezultata preporučila da se usluga proširi i na susedna sela.",
+      "sentiment": 1
+    },
+    {
+      "variety": "serbo-croatian",
+      "article": "Kupci internet prodavnice prijavili su niz problema sa kurirskom službom <aspect>Brzi Paket</aspect> nakon praznične rasprodaje. Nekoliko pošiljaka kasnilo je više od sedam dana, a podaci za praćenje nisu se menjali iako su rokovi već bili prekoračeni. Operateri <aspect>Brzog Paketa</aspect> davali su različita objašnjenja i nisu ponudili jasan postupak za naknadu štete. Udruženje potrošača zato je zatražilo hitan plan isporuke i preciznije obaveštavanje korisnika.",
+      "sentiment": -1
+    },
+    {
+      "variety": "serbo-croatian",
+      "article": "U godišnjem pregledu lokalnog finansijskog tržišta analitičari su razmatrali ponudu institucije <aspect>Nova Banka</aspect>. Broj otvorenih računa ostao je približno isti kao prethodne godine, dok su kamatne stope menjane u skladu sa tržišnim prosekom. Uprava <aspect>Nove Banke</aspect> najavila je obnovu mobilne aplikacije, ali nije objavila datum niti očekivane troškove projekta. Autori pregleda zato nisu promenili neutralnu procenu njenog poslovanja.",
+      "sentiment": 0
+    },
+    {
+      "variety": "serbo-croatian",
+      "article": "Škole u četiri opštine završile su pilot-projekat digitalnih učionica koji je tehnički podržala kompanija <aspect>Plavi Signal</aspect>. Nastavnici navode da je oprema bila stabilna, uputstva razumljiva i obuka prilagođena ljudima bez prethodnog iskustva. Kada je jedna škola prijavila kvar, ekipa <aspect>Plavog Signala</aspect> zamenila je uređaj sledećeg jutra bez dodatnih troškova. Opštine su ocenile saradnju uspešnom i planiraju nastavak projekta u narednoj školskoj godini.",
+      "sentiment": 1
+    },
+    {
+      "variety": "serbo-croatian",
+      "article": "Putnici su tokom jutarnjeg špica više puta ostali bez najavljenih polazaka prevoznika <aspect>Gradski Prevoz</aspect>. Elektronske table prikazivale su autobuse koji se nisu pojavili, dok telefonska podrška nije mogla da potvrdi izmenjeni red vožnje. Saopštenje <aspect>Gradskog Prevoza</aspect> objavljeno je tek uveče i nije objasnilo zašto rezervna vozila nisu aktivirana. Gradska inspekcija je najavila nadzor, a udruženje putnika zahteva povraćaj dela mesečnih karata.",
+      "sentiment": -1
+    },
+    {
+      "variety": "croatian",
+      "article": "Tijekom ljetne sezone mala iznajmljivačka poduzeća koristila su platformu <aspect>Jadranska Mreža</aspect> za usklađivanje rezervacija. Korisnici su istaknuli da je kalendar bio pregledan, potvrde su stizale odmah, a podrška je brzo riješila dvostruko unesenu rezervaciju. Tim <aspect>Jadranske Mreže</aspect> organizirao je i besplatnu radionicu o zaštiti podataka za nove članove. Turistička zajednica ocijenila je pilot vrlo uspješnim i preporučila nastavak suradnje izvan glavne sezone.",
+      "sentiment": 1
+    },
+    {
+      "variety": "croatian",
+      "article": "Gradsko vijeće razmotrilo je šestomjesečno izvješće o informacijskom rješenju <aspect>Zagrebački Sustav</aspect>. Broj obrađenih zahtjeva bio je sličan planiranom, a troškovi održavanja ostali su unutar odobrenog proračuna. Dobavljač <aspect>Zagrebačkog Sustava</aspect> najavio je manje promjene korisničkog sučelja, no vijećnicima još nije predstavio konačan raspored. Odluka o proširenju sustava odgođena je do sljedeće sjednice bez pozitivne ili negativne preporuke.",
+      "sentiment": 0
+    },
+    {
+      "variety": "croatian",
+      "article": "Nakon nadogradnje internetske trgovine kupci su prijavili ozbiljne poteškoće pri plaćanju preko usluge <aspect>Sigurna Kupnja</aspect>. Nekima je iznos privremeno terećen dvaput, a potvrda narudžbe nije stigla ni nakon nekoliko sati. Podrška <aspect>Sigurne Kupnje</aspect> odgovarala je predloškom i nije navela kada će pogrešna terećenja biti poništena. Udruga za zaštitu potrošača zatražila je istragu i upozorila korisnike da do rješenja sačuvaju svu dokumentaciju.",
+      "sentiment": -1
+    },
+    {
+      "variety": "bosnian",
+      "article": "Nekoliko općina uključilo se u probni program razmjene službenih dokumenata koji održava kompanija <aspect>Bosanski Most</aspect>. Sistem je tokom prvog mjeseca obradio planirani broj zahtjeva, uz jedan kraći zastoj koji nije doveo do gubitka podataka. Inženjeri <aspect>Bosanskog Mosta</aspect> dostavili su izvještaj o incidentu i predložili dodatnu rezervnu vezu, ali troškovi te izmjene još nisu odobreni. Općine će zato program nastaviti pratiti prije donošenja konačne odluke.",
+      "sentiment": 0
+    }
+  ]
+}

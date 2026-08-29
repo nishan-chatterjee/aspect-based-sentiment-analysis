@@ -1,0 +1,10 @@
+{
+  "id": "sl",
+  "display_name": "Slovenian",
+  "access": "private-local",
+  "train_val_template": "slovene_train_val_{split}.json",
+  "test_file": "slovene_test.json",
+  "aspects_file": "slovene_aspects.json",
+  "split_indices": [0, 1, 2],
+  "required_fields": ["uuid", "article", "aspect", "sentiment"]
+}

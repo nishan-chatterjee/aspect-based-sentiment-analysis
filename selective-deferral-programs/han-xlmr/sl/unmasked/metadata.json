@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "han-xlmr",
+  "language": "sl",
+  "prompt_variant": "unmasked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "sanitized-post-release",
+  "behavioral_parity_with_paper": false,
+  "source_sha256": "32bfd15d92ef1e88e38ec34eeded8cbdf59fb2fd5365847f0c03edae5c7fd564",
+  "program_sha256": "8afc7280a32d1f6d78533a69133650196ebcbae8307d7f19200def9a47d87d21",
+  "source_locator": "reviews/uncertainty/llm-selective-deferral/slovenian/unmasked/han_xlmr_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": true
+  }
+}

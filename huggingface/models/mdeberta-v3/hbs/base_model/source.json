@@ -1,0 +1,7 @@
+{
+  "model": "mdeberta-v3",
+  "language": "hbs",
+  "upstream_base_model": "microsoft/mdeberta-v3-base",
+  "purpose": "Tokenizer and architecture configuration for offline checkpoint reconstruction",
+  "contains_upstream_model_weights": false
+}

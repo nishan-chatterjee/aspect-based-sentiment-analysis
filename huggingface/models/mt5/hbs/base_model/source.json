@@ -1,0 +1,7 @@
+{
+  "model": "mt5",
+  "language": "hbs",
+  "upstream_base_model": "google/mt5-base",
+  "purpose": "Tokenizer and architecture configuration for offline checkpoint reconstruction",
+  "contains_upstream_model_weights": false
+}

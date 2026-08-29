@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "entries": [
+    {
+      "public_path": "src/aspectbench/evaluation/metrics.py",
+      "sources": [
+        "reviews/8.1 reviewer_encoder_baselines.py",
+        "reviews/8.2 reviewer_mt5_baseline.py",
+        "reviews/multi_expert_defer.py"
+      ],
+      "protocol_changed": false,
+      "notes": "Fixed-label Macro-F1, weighted metrics, per-class support, and quadratic weighted kappa consolidated."
+    },
+    {
+      "public_path": "src/aspectbench/evaluation/reporting.py",
+      "sources": [
+        "reviews/build_final_results_notebook.py",
+        "reviews/analyze_masking_statistics.py",
+        "additional-tasks/create_language_specific_baselines_notebook.py"
+      ],
+      "protocol_changed": false,
+      "notes": "Per-aspect and seen/unseen reporting extracted; seen aspects are derived from the selected train/validation split."
+    },
+    {
+      "public_path": "src/aspectbench/registry.py",
+      "sources": [
+        "huggingface/scripts/model_registry.py"
+      ],
+      "protocol_changed": false,
+      "notes": "BERTic and SloBERTa are separate adapters; slavic-specific remains a language-aware compatibility alias."
+    },
+    {
+      "public_path": "src/aspectbench/models/longformer.py",
+      "sources": [
+        "reviews/8.1 reviewer_encoder_baselines.py"
+      ],
+      "protocol_changed": false,
+      "notes": "Architecture metadata split from the former shared encoder script."
+    },
+    {
+      "public_path": "src/aspectbench/models/mdeberta.py",
+      "sources": [
+        "reviews/8.1 reviewer_encoder_baselines.py"
+      ],
+      "protocol_changed": false,
+      "notes": "Architecture metadata split from the former shared encoder script."
+    },
+    {
+      "public_path": "src/aspectbench/models/bertic.py",
+      "sources": [
+        "reviews/8.1 reviewer_encoder_baselines.py"
+      ],
+      "protocol_changed": false,
+      "notes": "HBS language-specific adapter split from slavic_specific."
+    },
+    {
+      "public_path": "src/aspectbench/models/sloberta.py",
+      "sources": [
+        "reviews/8.1 reviewer_encoder_baselines.py"
+      ],
+      "protocol_changed": false,
+      "notes": "Slovenian language-specific adapter split from slavic_specific."
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "xlmr",
+  "language": "sl",
+  "prompt_variant": "unmasked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "paper-original-audited",
+  "behavioral_parity_with_paper": true,
+  "source_sha256": "664fab4af294be82b78ee8ab8bbc12fe11ae1fdd6e2ae50c3eecd46144849a7c",
+  "program_sha256": "452a490b71d824272e316d2d1b3931a08e80a08856b68e1b9b0710b4f6a2fcd3",
+  "source_locator": "additional-tasks/uncertainty/llm-selective-deferral/slovenian/unmasked/xlmr_truncated_masked/medium/optimized_program_slovenian_selective-deferral_unmasked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": false
+  }
+}

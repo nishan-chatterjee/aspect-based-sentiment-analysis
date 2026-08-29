@@ -1,0 +1,392 @@
+"""Command-line entry points for the refactored AspectBench package."""
+
+from __future__ import annotations
+
+import argparse
+import json
+from pathlib import Path
+import sys
+from typing import Any, Sequence
+
+from .data import load_records
+from .evaluation import build_evaluation_report
+from .registry import select_models
+
+
+def _input_records(args: argparse.Namespace, *, labeled: bool = False) -> list[dict[str, Any]]:
+    if getattr(args, "input", None):
+        records = load_records(args.input)
+    elif getattr(args, "input_doc", None):
+        record: dict[str, Any] = {"article": args.input_doc}
+        if getattr(args, "aspect", None):
+            record["aspect"] = args.aspect
+        if getattr(args, "sentiment", None) is not None:
+            record["sentiment"] = args.sentiment
+        records = [record]
+    else:
+        raise ValueError("Supply either --input FILE or --input-doc TEXT.")
+    if getattr(args, "limit", None) is not None:
+        records = records[: args.limit]
+    if labeled and any(record.get("sentiment") not in (-1, 0, 1) for record in records):
+        raise ValueError("This command requires sentiment -1, 0, or 1 on every record.")
+    return records
+
+
+def _infer_command(args: argparse.Namespace) -> int:
+    from .inference import run_inference
+
+    output = run_inference(
+        _input_records(args),
+        models=args.models,
+        language=args.dataset,
+        variant=args.variant,
+        repository_root=args.repository_root,
+        model_root=args.model_root,
+        base_model_root=args.base_model_root,
+        run_root=args.run_root,
+        run_id=args.run_id,
+        device=args.device,
+        batch_size=args.batch_size,
+        shard_size=args.shard_size,
+        mc_passes=args.mc_passes,
+        seed=args.seed,
+        resume=args.resume,
+        skip_unavailable=args.skip_unavailable,
+    )
+    print(output.resolve())
+    return 0
+
+
+def _train_smoke_command(args: argparse.Namespace) -> int:
+    from .training import run_training_smoke
+
+    output = run_training_smoke(
+        _input_records(args, labeled=True),
+        models=args.models,
+        language=args.dataset,
+        variant=args.variant,
+        repository_root=args.repository_root,
+        pretrained_model_root=args.model_root,
+        output_model_root=args.output_model_root,
+        base_model_root=args.base_model_root,
+        run_root=args.run_root,
+        run_id=args.run_id,
+        device=args.device,
+        learning_rate=args.learning_rate,
+        batch_size=args.batch_size,
+        reload_check=args.reload_check,
+        resume=args.resume,
+        skip_unavailable=args.skip_unavailable,
+    )
+    print(output.resolve())
+    return 0
+
+
+def _defer_query_command(args: argparse.Namespace) -> int:
+    from .deferral.query import run_deferral
+
+    output = run_deferral(
+        _input_records(args),
+        models=args.models,
+        primary_model=args.primary_model,
+        language=args.dataset,
+        variant=args.variant,
+        repository_root=args.repository_root,
+        pretrained_model_root=args.model_root,
+        base_model_root=args.base_model_root,
+        run_root=args.run_root,
+        run_id=args.run_id,
+        endpoint_model=args.endpoint_model,
+        api_base=args.api_base,
+        api_key=args.api_key,
+        model_type=args.model_type,
+        program_path=args.program,
+        device=args.device,
+        mc_passes=args.mc_passes,
+        batch_size=args.batch_size,
+        shard_size=args.shard_size,
+        gate_rate=args.gate_rate,
+        resume=args.resume,
+        retry_failed=args.retry_failed,
+    )
+    print(output.resolve())
+    return 0
+
+
+def _defer_optimize_command(args: argparse.Namespace) -> int:
+    from .deferral.optimize import optimize_program
+    from .inference import run_inference
+    from .registry import normalize_language, resolve_model
+
+    language = normalize_language(args.dataset)
+    primary_model = resolve_model(
+        args.primary_model, language=language, variant=args.variant
+    ).name
+
+    def predict(path: str, split: str) -> list[dict[str, Any]]:
+        records = load_records(path)
+        output = run_inference(
+            records,
+            models=args.models or [args.primary_model],
+            language=language,
+            variant=args.variant,
+            repository_root=args.repository_root,
+            model_root=args.model_root,
+            base_model_root=args.base_model_root,
+            run_root=args.run_root,
+            run_id=f"{args.run_id}-{split}-plm",
+            device=args.device,
+            batch_size=args.batch_size,
+            shard_size=args.shard_size,
+            mc_passes=args.mc_passes,
+            resume=args.resume,
+        )
+        rows = json.loads(output.read_text(encoding="utf-8"))
+        by_record: dict[str, dict[str, dict[str, Any]]] = {}
+        for row in rows:
+            by_record.setdefault(row["record_id"], {})[row["model"]] = row
+        selected = []
+        for model_rows in by_record.values():
+            if primary_model not in model_rows:
+                continue
+            primary = dict(model_rows[primary_model])
+            primary["auxiliary_experts"] = {
+                name: {
+                    "prediction": row["prediction"],
+                    "probabilities": row["probabilities"],
+                    "uncertainty": row["uncertainty"],
+                }
+                for name, row in model_rows.items()
+                if name != primary_model
+            }
+            selected.append(primary)
+        if len(selected) != len(records):
+            raise ValueError(
+                f"Primary model {primary_model!r} has {len(selected)}/{len(records)} {split} predictions."
+            )
+        return selected
+
+    output = optimize_program(
+        predict(args.train_input, "train"),
+        predict(args.val_input, "validation"),
+        endpoint_model=args.endpoint_model,
+        api_base=args.api_base,
+        api_key=args.api_key,
+        model_type=args.model_type,
+        run_root=args.run_root,
+        run_id=args.run_id,
+        auto=args.auto,
+        seed=args.seed,
+        resume=args.resume,
+    )
+    print(output.resolve())
+    return 0
+
+
+def _progress_command(args: argparse.Namespace) -> int:
+    path = Path(args.path)
+    if path.is_dir():
+        path = path / "progress.json"
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    _json_dump(payload, None)
+    return 0
+
+
+def _qualitative_command(args: argparse.Namespace) -> int:
+    from .analysis import build_error_review
+
+    report = build_error_review(
+        load_records(args.predictions),
+        include_correct=args.include_correct,
+        limit=args.limit,
+    )
+    _json_dump(report, args.output)
+    return 0
+
+
+def _json_dump(payload: Any, path: str | Path | None) -> None:
+    rendered = json.dumps(payload, ensure_ascii=False, indent=2) + "\n"
+    if path is None:
+        print(rendered, end="")
+        return
+    output = Path(path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(rendered, encoding="utf-8")
+    print(f"Wrote {output.resolve()}")
+
+
+def _models_command(args: argparse.Namespace) -> int:
+    specs = select_models(args.models, language=args.language, variant=args.variant)
+    payload = [spec.to_dict() for spec in specs]
+    if args.json:
+        _json_dump(payload, None)
+        return 0
+    for spec in specs:
+        languages = ",".join(spec.languages)
+        variants = ",".join(spec.variants)
+        print(f"{spec.name:14} {languages:6} {variants:17} {spec.display_name}")
+    return 0
+
+
+def _score_command(args: argparse.Namespace) -> int:
+    predictions = load_records(args.predictions)
+    training_records = None
+    if args.train_data:
+        training_records = []
+        for path in args.train_data:
+            training_records.extend(load_records(path, keys=("train", "val")))
+    report = build_evaluation_report(
+        predictions,
+        training_records=training_records,
+        aspect_key=args.aspect_key,
+        gold_key=args.gold_key,
+        prediction_key=args.prediction_key,
+    )
+    _json_dump(report, args.output)
+    return 0
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="aspectbench")
+    subparsers = parser.add_subparsers(dest="command", required=True)
+
+    models = subparsers.add_parser("models", help="Inspect or resolve model adapters.")
+    models.add_argument("--models", nargs="+", default=["all"])
+    models.add_argument("--language", default=None)
+    models.add_argument("--variant", choices=("masked", "unmasked"), default=None)
+    models.add_argument("--json", action="store_true")
+    models.set_defaults(handler=_models_command)
+
+    score = subparsers.add_parser("score", help="Build an evaluation report from predictions.")
+    score.add_argument("--predictions", required=True)
+    score.add_argument("--train-data", nargs="*", default=None)
+    score.add_argument("--output", default=None)
+    score.add_argument("--aspect-key", default="aspect")
+    score.add_argument("--gold-key", default="sentiment")
+    score.add_argument("--prediction-key", default="prediction")
+    score.set_defaults(handler=_score_command)
+
+    def add_input(command: argparse.ArgumentParser, *, allow_sentiment: bool = False) -> None:
+        source = command.add_mutually_exclusive_group(required=True)
+        source.add_argument("--input", help="JSON/JSONL record file.")
+        source.add_argument("--input-doc", help="One tagged article string.")
+        command.add_argument("--aspect", default=None, help="Optional explicit target aspect.")
+        if allow_sentiment:
+            command.add_argument("--sentiment", type=int, choices=(-1, 0, 1), default=None)
+        command.add_argument("--limit", type=int, default=None)
+
+    def add_model_runtime(command: argparse.ArgumentParser) -> None:
+        command.add_argument("--models", nargs="+", default=["all"])
+        command.add_argument("--dataset", required=True, help="hbs or sl")
+        command.add_argument("--variant", choices=("masked", "unmasked"), default="masked")
+        command.add_argument("--repository-root", default=".")
+        command.add_argument("--model-root", default="huggingface/models")
+        command.add_argument("--base-model-root", default=None)
+        command.add_argument("--run-root", default="models/_runs")
+        command.add_argument("--run-id", required=True)
+        command.add_argument("--device", default="auto")
+        command.add_argument("--batch-size", type=int, default=8)
+        command.add_argument("--shard-size", type=int, default=64)
+        command.add_argument("--mc-passes", type=int, default=8)
+        command.add_argument("--seed", type=int, default=42)
+        command.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
+
+    infer = subparsers.add_parser("infer", help="Predict with one/few/all released models.")
+    add_input(infer)
+    add_model_runtime(infer)
+    infer.add_argument(
+        "--skip-unavailable",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+        help="Defaults to true for --models all and false for explicit models.",
+    )
+    infer.set_defaults(handler=_infer_command)
+
+    train = subparsers.add_parser(
+        "train-smoke", help="Run one optimizer update and checkpoint/reload verification."
+    )
+    add_input(train, allow_sentiment=True)
+    add_model_runtime(train)
+    train.add_argument("--output-model-root", default="models")
+    train.add_argument("--learning-rate", type=float, default=1e-5)
+    train.add_argument(
+        "--reload-check", action=argparse.BooleanOptionalAction, default=True
+    )
+    train.add_argument(
+        "--skip-unavailable", action=argparse.BooleanOptionalAction, default=None
+    )
+    train.set_defaults(handler=_train_smoke_command)
+
+    query = subparsers.add_parser(
+        "defer-query", help="Run PLM uncertainty gating and a DSPy selective-deferral program."
+    )
+    add_input(query)
+    add_model_runtime(query)
+    query.add_argument("--primary-model", required=True)
+    query.add_argument("--endpoint-model", required=True)
+    query.add_argument("--api-base", default="http://127.0.0.1:8000")
+    query.add_argument("--api-key", default="local")
+    query.add_argument("--model-type", choices=("chat", "text"), default="chat")
+    query.add_argument("--program", default=None)
+    query.add_argument("--gate-rate", type=float, default=0.25)
+    query.add_argument("--retry-failed", action="store_true")
+    query.set_defaults(handler=_defer_query_command)
+
+    optimize = subparsers.add_parser(
+        "defer-optimize", help="Optimize and save a reusable DSPy program with MIPROv2."
+    )
+    optimize.add_argument("--train-input", required=True)
+    optimize.add_argument("--val-input", required=True)
+    optimize.add_argument("--primary-model", required=True)
+    optimize.add_argument(
+        "--models", nargs="+", default=None,
+        help="Primary plus auxiliary PLMs; defaults to the primary only and accepts all.",
+    )
+    optimize.add_argument("--dataset", required=True)
+    optimize.add_argument("--variant", choices=("masked", "unmasked"), default="masked")
+    optimize.add_argument("--repository-root", default=".")
+    optimize.add_argument("--model-root", default="huggingface/models")
+    optimize.add_argument("--base-model-root", default=None)
+    optimize.add_argument("--run-root", default="models/_runs")
+    optimize.add_argument("--run-id", required=True)
+    optimize.add_argument("--device", default="auto")
+    optimize.add_argument("--batch-size", type=int, default=8)
+    optimize.add_argument("--shard-size", type=int, default=64)
+    optimize.add_argument("--mc-passes", type=int, default=8)
+    optimize.add_argument("--endpoint-model", required=True)
+    optimize.add_argument("--api-base", default="http://127.0.0.1:8000")
+    optimize.add_argument("--api-key", default="local")
+    optimize.add_argument("--model-type", choices=("chat", "text"), default="chat")
+    optimize.add_argument("--auto", choices=("light", "medium", "heavy"), default="light")
+    optimize.add_argument("--seed", type=int, default=42)
+    optimize.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
+    optimize.set_defaults(handler=_defer_optimize_command)
+
+    progress = subparsers.add_parser("progress", help="Print a run's progress JSON.")
+    progress.add_argument("path", help="Run directory or progress.json path.")
+    progress.set_defaults(handler=_progress_command)
+
+    qualitative = subparsers.add_parser(
+        "qualitative", help="Export high-confidence errors for local article review."
+    )
+    qualitative.add_argument("--predictions", required=True)
+    qualitative.add_argument("--output", default=None)
+    qualitative.add_argument("--limit", type=int, default=None)
+    qualitative.add_argument("--include-correct", action="store_true")
+    qualitative.set_defaults(handler=_qualitative_command)
+    return parser
+
+
+def main(argv: Sequence[str] | None = None) -> int:
+    args = build_parser().parse_args(argv)
+    try:
+        return int(args.handler(args))
+    except (OSError, RuntimeError, ValueError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

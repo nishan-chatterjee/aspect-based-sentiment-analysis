@@ -1,0 +1,15 @@
+name: aspectbench
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - accelerate==1.13.0
+      - huggingface-hub==1.15.0
+      - numpy>=1.24,<3
+      - sentence-transformers==5.5.1
+      - sentencepiece==0.2.1
+      - spacy==3.8.14
+      - torch==2.6.0
+      - transformers==5.8.1

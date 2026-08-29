@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "longformer",
+  "language": "hbs",
+  "prompt_variant": "masked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "paper-original-audited",
+  "behavioral_parity_with_paper": true,
+  "source_sha256": "5b90802ed05c7cf0eb1df67c4c1e4ed5e4ab591ccf31dddd103a4f315f9f69d4",
+  "program_sha256": "cbb3045ad1f96f04e5f8bd857b4b02d9da3714d30c2056a6cc067df1894baf07",
+  "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/masked/longformer_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": false
+  }
+}

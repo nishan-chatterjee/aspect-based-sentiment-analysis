@@ -1,0 +1,7 @@
+{
+  "model": "slavic-specific",
+  "language": "hbs",
+  "upstream_base_model": "classla/bcms-bertic",
+  "purpose": "Tokenizer and architecture configuration for offline checkpoint reconstruction",
+  "contains_upstream_model_weights": false
+}

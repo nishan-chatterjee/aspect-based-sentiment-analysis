@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "model": "mdeberta-v3",
+  "language": "hbs",
+  "prompt_variant": "masked",
+  "optimizer": "MIPROv2-medium",
+  "release_status": "paper-original-audited",
+  "behavioral_parity_with_paper": true,
+  "source_sha256": "8fcb188f42319b9efb08761a95db58ebaf9500b9cdeb715c3810d321f9261f94",
+  "program_sha256": "84a256a1e91f135eec717dad54e4b716bc68c3523a47ce54a97497dcd535b38e",
+  "source_locator": "reviews/uncertainty/llm-selective-deferral/serbian/masked/mdeberta_masked/medium/optimized_program_serbian_selective-deferral_masked_teacher_qwen-2.5-72b_autorun_medium_temp_1.0.json",
+  "privacy_audit": {
+    "demos_cleared": true,
+    "traces_cleared": true,
+    "train_cleared": true,
+    "embedded_example_removed": false
+  }
+}
