@@ -32,6 +32,7 @@ runs/
 # Exact DSPy programs may contain optimized examples from restricted data.
 # Put originals here; only separately audited programs belong in public paths.
 selective-deferral-programs/private-originals/
+selective-deferral-programs/optimized/
 selective-deferral-programs/**/*.private.json
 
 # Record-level outputs may reproduce source text.

@@ -38,6 +38,7 @@ if [[ "$MODELS" == "all" ]]; then
     MODELS="xlmr,han-xlmr,longformer,mdeberta-v3,mt5,sloberta,bge-m3-mlp"
   fi
 fi
+MODELS="${MODELS// /,}"
 IFS=',' read -r -a gpu_array <<< "$GPUS"
 IFS=',' read -r -a model_array <<< "$MODELS"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

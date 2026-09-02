@@ -35,6 +35,11 @@ bash scripts/0.2-import-sl-data.sh --source /authorized/path/slovene-release
 `CLARIN_BEARER_TOKEN`, when required, is read only from the environment. Both
 destination directories are ignored by Git.
 
+The local working repository and the private release archive may contain
+actual authorized copies in these exact paths for smoke tests. Their presence
+does not make them publishable: `git status --ignored` should report every
+real JSON as ignored, and no data record may be force-added.
+
 Dataset descriptors live in `configs/data/`. A custom dataset may use the same
 record contract: `uuid`, `article`, `aspect`, and `sentiment`, with original
 sentiment labels `-1`, `0`, and `1`.

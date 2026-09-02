@@ -1,0 +1,34 @@
+Bootstrap: docker
+From: pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
+
+%post
+    set -eux
+    python -m pip install --upgrade pip
+    python -m pip install uv
+    uv pip install --system -r /tmp/absa-requirements.txt
+    python - <<'PY'
+import torch
+import transformers
+import sklearn
+print("torch", torch.__version__, "cuda", torch.version.cuda)
+print("transformers", transformers.__version__)
+print("sklearn", sklearn.__version__)
+PY
+
+%files
+    requirements.txt /tmp/absa-requirements.txt
+
+%environment
+    export LC_ALL=C.UTF-8
+    export LANG=C.UTF-8
+    export PYTHONUNBUFFERED=1
+    export TOKENIZERS_PARALLELISM=false
+    export HF_HOME=/workspace/.hf_cache
+    export TRANSFORMERS_CACHE=/workspace/.hf_cache
+
+%runscript
+    exec python "$@"
+
+%labels
+    Author ABSA comparison experiments
+    Description PyTorch/HuggingFace environment for AspectBench additional comparison baselines

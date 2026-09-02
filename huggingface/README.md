@@ -187,7 +187,7 @@ batch = engine.predict_batch(
 ## Single prediction on an interactive SLURM node
 
 ```bash
-cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis/huggingface
+cd huggingface
 
 python scripts/predict.py \
   --model-name xlmr \
@@ -294,7 +294,7 @@ After opening an interactive allocation, run the validator directly from its
 shell. The argument is the number of GPUs to use:
 
 ```bash
-cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis/huggingface
+cd huggingface
 
 # Choose exactly one of these commands.
 ABSA_MC_PASSES=10 bash scripts/run_validation_interactive.sh 1

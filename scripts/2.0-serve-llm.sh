@@ -12,14 +12,15 @@ CONDA_ENV="vllm"
 LLAMA_SERVER="llama-server"
 MAX_MODEL_LEN="12288"
 GPU_MEMORY="0.94"
-CONTEXT="589824"
-PARALLEL="48"
+CONTEXT="196608"
+PARALLEL="16"
 SPLIT_MODE="layer"
 TENSOR_SPLIT=""
 RUN_ID="llm-server"
 RUN_ROOT="models/_runs"
 DRY_RUN="0"
 SKIP_CHAT_CHECK="0"
+CHAT_TEMPLATE=""
 
 usage() {
   echo "Usage: $0 --backend vllm|llama-cpp --model PATH --model-alias NAME [options]" >&2
@@ -41,6 +42,7 @@ while [[ $# -gt 0 ]]; do
     --parallel) PARALLEL="$2"; shift 2 ;;
     --split-mode) SPLIT_MODE="$2"; shift 2 ;;
     --tensor-split) TENSOR_SPLIT="$2"; shift 2 ;;
+    --chat-template) CHAT_TEMPLATE="$2"; shift 2 ;;
     --run-id) RUN_ID="$2"; shift 2 ;;
     --run-root) RUN_ROOT="$2"; shift 2 ;;
     --dry-run) DRY_RUN="1"; shift ;;
@@ -60,6 +62,7 @@ if [[ "$BACKEND" == "vllm" ]]; then
     --tensor-parallel-size "$TP" --max-model-len "$MAX_MODEL_LEN"
     --gpu-memory-utilization "$GPU_MEMORY" --generation-config vllm)
   [[ -n "$TOKENIZER" ]] && command+=(--tokenizer "$TOKENIZER" --hf-config-path "$TOKENIZER")
+  [[ -n "$CHAT_TEMPLATE" ]] && command+=(--chat-template "$CHAT_TEMPLATE")
 else
   command=("$LLAMA_SERVER" -m "$MODEL" --alias "$ALIAS" --host "$HOST" --port "$PORT"
     -ngl 99 -c "$CONTEXT" -np "$PARALLEL" -cb -fa on --split-mode "$SPLIT_MODE")

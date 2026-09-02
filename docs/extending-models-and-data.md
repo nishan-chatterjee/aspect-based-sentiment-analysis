@@ -20,9 +20,12 @@ Longformer, mDeBERTa-v3, BERTić, and SloBERTa have distinct modules. Numbered
 files under `scripts/` remain thin aggregators and should not contain model
 implementations.
 
-To include the model in the parallel `all` convenience launchers, append its
-canonical name to the language-specific list in `scripts/1.1-all-inference.sh`
-and `scripts/3.1-all-finetuning-smoke.sh`.
+To include the model in every `all` convenience launcher, append its canonical
+name to the language-specific lists in `scripts/run-aspectbench.sh`,
+`scripts/1.1-all-inference.sh`, `scripts/3.1-all-finetuning.sh`,
+`scripts/3.1-all-finetuning-smoke.sh`, and the DSPy matrix launchers where that
+model has a compatible program. Add its `best` variant mapping to
+`configs/models/best-variants.json` and the shell launchers.
 
 ## Add a dataset
 

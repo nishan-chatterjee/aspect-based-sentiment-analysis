@@ -15,6 +15,7 @@ def test_public_program_grid_has_no_embedded_examples():
         path = (
             ROOT
             / "selective-deferral-programs"
+            / "precalibrated"
             / metadata["model"]
             / metadata["language"]
             / metadata["prompt_variant"]

@@ -82,8 +82,71 @@ def _train_smoke_command(args: argparse.Namespace) -> int:
     return 0
 
 
+def _train_command(args: argparse.Namespace) -> int:
+    from .training import run_training
+
+    training_records = load_records(args.train_input, keys=("train",))
+    validation_records = load_records(args.val_input, keys=("val", "validation"))
+    uncertainty_sets: dict[str, list[dict[str, Any]]] = {
+        "validation": validation_records
+    }
+    for value in args.uncertainty_input:
+        if "=" not in value:
+            raise ValueError("--uncertainty-input must use NAME=PATH.")
+        name, path = value.split("=", 1)
+        if not name.strip() or not path.strip():
+            raise ValueError("--uncertainty-input must use non-empty NAME=PATH.")
+        uncertainty_sets[name.strip()] = load_records(path.strip())
+    output = run_training(
+        training_records,
+        validation_records,
+        uncertainty_sets=uncertainty_sets,
+        models=args.models,
+        language=args.dataset,
+        variant=args.variant,
+        repository_root=args.repository_root,
+        pretrained_model_root=args.model_root,
+        output_model_root=args.output_model_root,
+        base_model_root=args.base_model_root,
+        run_root=args.run_root,
+        run_id=args.run_id,
+        device=args.device,
+        epochs=args.epochs,
+        batch_size=args.batch_size,
+        learning_rate=args.learning_rate,
+        weight_decay=args.weight_decay,
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
+        max_steps=args.max_steps,
+        mc_passes=args.mc_passes,
+        shard_size=args.shard_size,
+        seed=args.seed,
+        resume=args.resume,
+        skip_unavailable=args.skip_unavailable,
+    )
+    print(output.resolve())
+    return 0
+
+
 def _defer_query_command(args: argparse.Namespace) -> int:
     from .deferral.query import run_deferral
+    from .deferral.programs import program_path, validate_program_metadata
+
+    prompt_variant = args.prompt_variant or args.variant
+    resolved_program = Path(args.program) if args.program else program_path(
+        source=args.program_source,
+        model=args.primary_model,
+        dataset=args.dataset,
+        variant=prompt_variant,
+        program_root=args.program_root,
+        run_id=args.program_run_id,
+    )
+    validate_program_metadata(
+        resolved_program,
+        model=args.primary_model,
+        dataset=args.dataset,
+        variant=prompt_variant,
+        allow_mismatch=args.allow_program_mismatch,
+    )
 
     output = run_deferral(
         _input_records(args),
@@ -91,6 +154,7 @@ def _defer_query_command(args: argparse.Namespace) -> int:
         primary_model=args.primary_model,
         language=args.dataset,
         variant=args.variant,
+        prompt_variant=prompt_variant,
         repository_root=args.repository_root,
         pretrained_model_root=args.model_root,
         base_model_root=args.base_model_root,
@@ -98,9 +162,17 @@ def _defer_query_command(args: argparse.Namespace) -> int:
         run_id=args.run_id,
         endpoint_model=args.endpoint_model,
         api_base=args.api_base,
+        api_bases=(
+            [value.strip() for value in args.api_bases.split(",") if value.strip()]
+            if args.api_bases else None
+        ),
+        num_workers_per_endpoint=(
+            [int(value.strip()) for value in args.num_workers_per_endpoint.split(",")]
+            if args.num_workers_per_endpoint else None
+        ),
         api_key=args.api_key,
         model_type=args.model_type,
-        program_path=args.program,
+        program_path=resolved_program,
         device=args.device,
         mc_passes=args.mc_passes,
         batch_size=args.batch_size,
@@ -122,9 +194,12 @@ def _defer_optimize_command(args: argparse.Namespace) -> int:
     primary_model = resolve_model(
         args.primary_model, language=language, variant=args.variant
     ).name
+    prompt_variant = args.prompt_variant or args.variant
 
     def predict(path: str, split: str) -> list[dict[str, Any]]:
-        records = load_records(path)
+        records = load_records(
+            path, keys=("train",) if split == "train" else ("val", "validation")
+        )
         output = run_inference(
             records,
             models=args.models or [args.primary_model],
@@ -171,10 +246,17 @@ def _defer_optimize_command(args: argparse.Namespace) -> int:
         predict(args.val_input, "validation"),
         endpoint_model=args.endpoint_model,
         api_base=args.api_base,
+        teacher_endpoint_model=args.teacher_endpoint_model,
+        teacher_api_base=args.teacher_api_base,
+        teacher_api_key=args.teacher_api_key,
         api_key=args.api_key,
         model_type=args.model_type,
         run_root=args.run_root,
         run_id=args.run_id,
+        primary_model=primary_model,
+        dataset=language,
+        variant=prompt_variant,
+        program_root=args.program_root,
         auto=args.auto,
         seed=args.seed,
         resume=args.resume,
@@ -319,6 +401,30 @@ def build_parser() -> argparse.ArgumentParser:
     )
     train.set_defaults(handler=_train_smoke_command)
 
+    full_train = subparsers.add_parser(
+        "train", help="Run resumable training and automatic MC uncertainty inference."
+    )
+    full_train.add_argument("--train-input", required=True)
+    full_train.add_argument("--val-input", required=True)
+    full_train.add_argument(
+        "--uncertainty-input",
+        action="append",
+        default=[],
+        metavar="NAME=PATH",
+        help="Additional labeled/unlabeled split to predict with MC dropout after training.",
+    )
+    add_model_runtime(full_train)
+    full_train.add_argument("--output-model-root", default="models")
+    full_train.add_argument("--epochs", type=int, default=3)
+    full_train.add_argument("--learning-rate", type=float, default=2e-5)
+    full_train.add_argument("--weight-decay", type=float, default=0.01)
+    full_train.add_argument("--gradient-accumulation-steps", type=int, default=1)
+    full_train.add_argument("--max-steps", type=int, default=None)
+    full_train.add_argument(
+        "--skip-unavailable", action=argparse.BooleanOptionalAction, default=None
+    )
+    full_train.set_defaults(handler=_train_command)
+
     query = subparsers.add_parser(
         "defer-query", help="Run PLM uncertainty gating and a DSPy selective-deferral program."
     )
@@ -327,9 +433,27 @@ def build_parser() -> argparse.ArgumentParser:
     query.add_argument("--primary-model", required=True)
     query.add_argument("--endpoint-model", required=True)
     query.add_argument("--api-base", default="http://127.0.0.1:8000")
+    query.add_argument("--api-bases", default=None, help="Comma-separated query endpoints.")
+    query.add_argument(
+        "--num-workers-per-endpoint", default=None,
+        help="Comma-separated positive worker counts matching --api-bases.",
+    )
     query.add_argument("--api-key", default="local")
     query.add_argument("--model-type", choices=("chat", "text"), default="chat")
     query.add_argument("--program", default=None)
+    query.add_argument(
+        "--prompt-variant", choices=("masked", "unmasked"), default=None,
+        help="DSPy prompt variant; defaults to the PLM --variant for compatibility.",
+    )
+    query.add_argument(
+        "--program-source",
+        choices=("precalibrated", "optimized"),
+        default="precalibrated",
+        help="Resolve an audited packaged program or a local user-optimized program.",
+    )
+    query.add_argument("--program-root", default="selective-deferral-programs")
+    query.add_argument("--program-run-id", default=None)
+    query.add_argument("--allow-program-mismatch", action="store_true")
     query.add_argument("--gate-rate", type=float, default=0.25)
     query.add_argument("--retry-failed", action="store_true")
     query.set_defaults(handler=_defer_query_command)
@@ -346,11 +470,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     optimize.add_argument("--dataset", required=True)
     optimize.add_argument("--variant", choices=("masked", "unmasked"), default="masked")
+    optimize.add_argument(
+        "--prompt-variant", choices=("masked", "unmasked"), default=None,
+        help="Program variant, independent of the fine-tuned PLM checkpoint variant.",
+    )
     optimize.add_argument("--repository-root", default=".")
     optimize.add_argument("--model-root", default="huggingface/models")
     optimize.add_argument("--base-model-root", default=None)
     optimize.add_argument("--run-root", default="models/_runs")
     optimize.add_argument("--run-id", required=True)
+    optimize.add_argument("--program-root", default="selective-deferral-programs")
     optimize.add_argument("--device", default="auto")
     optimize.add_argument("--batch-size", type=int, default=8)
     optimize.add_argument("--shard-size", type=int, default=64)
@@ -358,6 +487,9 @@ def build_parser() -> argparse.ArgumentParser:
     optimize.add_argument("--endpoint-model", required=True)
     optimize.add_argument("--api-base", default="http://127.0.0.1:8000")
     optimize.add_argument("--api-key", default="local")
+    optimize.add_argument("--teacher-endpoint-model", default=None)
+    optimize.add_argument("--teacher-api-base", default=None)
+    optimize.add_argument("--teacher-api-key", default=None)
     optimize.add_argument("--model-type", choices=("chat", "text"), default="chat")
     optimize.add_argument("--auto", choices=("light", "medium", "heavy"), default="light")
     optimize.add_argument("--seed", type=int, default=42)

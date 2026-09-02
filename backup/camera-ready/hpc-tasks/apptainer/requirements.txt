@@ -1,0 +1,13 @@
+transformers
+accelerate
+tokenizers
+sentencepiece
+safetensors
+huggingface_hub
+protobuf
+einops
+scikit-learn
+numpy
+scipy
+pandas
+tqdm

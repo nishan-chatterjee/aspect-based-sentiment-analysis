@@ -77,7 +77,13 @@ def resolve_model(name: str, language: str | None = None, variant: str | None = 
 def select_models(
     names: Iterable[str], language: str | None = None, variant: str | None = None
 ) -> tuple[ModelSpec, ...]:
-    requested = tuple(names)
+    requested = tuple(
+        part
+        for value in names
+        for comma_group in str(value).split(",")
+        for part in comma_group.split()
+        if part
+    )
     if not requested:
         raise ValueError("Select at least one model or use 'all'.")
     if "all" in {name.strip().lower() for name in requested}:

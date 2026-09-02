@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "selection_basis": "validation_macro_f1",
+  "hbs": {
+    "xlmr": "masked",
+    "han-xlmr": "masked",
+    "longformer": "unmasked",
+    "mdeberta-v3": "unmasked",
+    "mt5": "unmasked",
+    "bertic": "unmasked",
+    "bge-m3-mlp": "unmasked"
+  },
+  "sl": {
+    "xlmr": "masked",
+    "han-xlmr": "masked",
+    "longformer": "masked",
+    "mdeberta-v3": "masked",
+    "mt5": "unmasked",
+    "sloberta": "unmasked",
+    "bge-m3-mlp": "masked"
+  }
+}

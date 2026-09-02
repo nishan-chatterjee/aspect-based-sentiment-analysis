@@ -69,12 +69,19 @@ def checkpoint_status(
     release_model, release_language = release_coordinates(model, language)
     selection = registry.CHECKPOINTS[(release_model, release_language, variant)]
     weight = registry.weight_path(model_root, release_model, release_language, variant)
+    # A local user-trained checkpoint in the canonical release layout is a
+    # valid override even when the published release slot was marked missing.
+    # This is what makes ``--model-root models/_active`` reusable for newly
+    # trained BGE heads or recovered historical slots.
     return {
-        "available": bool(selection["available"] and weight.is_file()),
+        "available": bool(weight.is_file()),
         "registry_available": bool(selection["available"]),
+        "local_override": bool(weight.is_file() and not selection["available"]),
         "weight_file": str(weight),
-        "reason": selection.get("unavailable_reason") if not selection["available"] else (
-            None if weight.is_file() else f"Checkpoint file is missing: {weight}"
+        "reason": None if weight.is_file() else (
+            selection.get("unavailable_reason")
+            if not selection["available"]
+            else f"Checkpoint file is missing: {weight}"
         ),
         "release_model": release_model,
         "release_language": release_language,
@@ -91,8 +98,16 @@ def create_engine(
     variant: str,
     device: str,
 ):
-    inference, _ = load_release_modules(repository_root)
+    inference, registry = load_release_modules(repository_root)
     release_model, release_language = release_coordinates(model, language)
+    selection_key = (release_model, release_language, variant)
+    weight = registry.weight_path(model_root, release_model, release_language, variant)
+    if weight.is_file() and not registry.CHECKPOINTS[selection_key]["available"]:
+        local_selection = dict(registry.CHECKPOINTS[selection_key])
+        local_selection["available"] = True
+        local_selection["unavailable_reason"] = None
+        registry.CHECKPOINTS[selection_key] = local_selection
+        inference.CHECKPOINTS[selection_key] = local_selection
     return inference.InferenceEngine(
         model_name=release_model,
         language=release_language,

@@ -80,7 +80,7 @@ def main() -> int:
         rendered = json.dumps(payload, ensure_ascii=False)
         if "**Example:**" in rendered:
             raise ValueError(f"Embedded example remains after sanitation: {source}")
-        destination = output_root / expert / language / variant
+        destination = output_root / "precalibrated" / expert / language / variant
         destination.mkdir(parents=True, exist_ok=True)
         atomic_json(destination / "program.json", payload)
         metadata = {

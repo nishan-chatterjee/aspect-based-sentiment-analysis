@@ -1,165 +1,230 @@
-# Interactive GPU smoke tests
+# Interactive GPU runbook
 
-Run these commands from the repository root after acquiring an interactive
-node. Every workflow resumes by default. State lives under `models/_runs/`,
-model smoke checkpoints under `models/<model>/<language>/<variant>/smoke/`,
-and logs under each run's `_logs/` directory.
+Run from the repository root after acquiring an interactive node. Workflows
+resume by default. Run state, atomic shards, progress, and logs live below
+`models/_runs/`; newly trained checkpoints live below `models/MODEL/...`.
 
-## Environment and test article
+## 0. Install the command and define a test article
 
 ```bash
 source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
 conda activate absa
 python -m pip install -e . --no-deps
+aspectbench models --models all
 
 ARTICLE='Tokom šestonedeljnog testiranja, redakcija je više puta kontaktirala <aspect>Primer Grupu</aspect> zbog nove usluge. Prvi odgovor <aspect>Primer Grupe</aspect> stigao je istog dana, a tehnički tim je zatim otklonio prijavljenu grešku bez dodatnih troškova. U završnom upitniku većina korisnika ocenila je podršku kao jasnu i pouzdanu.'
 ```
 
-## 1. Pretrained inference and uncertainty
+The registry contains `xlmr`, `han-xlmr`, `longformer`, `mdeberta-v3`, `mt5`,
+`bertic` (HBS), `sloberta` (Slovenian), and `bge-m3-mlp`. Any shorter model
+list below is an example.
 
-One model on the first visible GPU:
+## 1. Predict and estimate uncertainty
+
+One model and one document:
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 python scripts/1.0-models-inference.py \
+CUDA_VISIBLE_DEVICES=0 aspectbench infer \
   --models longformer --dataset hbs --variant masked \
   --input-doc "$ARTICLE" --mc-passes 8 --batch-size 1 \
-  --run-id hbs-longformer-input-smoke
+  --run-id hbs-longformer-document-smoke
 ```
 
-The result is
-`models/_runs/inference/hbs-longformer-input-smoke/predictions.json`. It
-contains the class probabilities, predictive entropy, confidence, top-two
-margin, and MC-dropout mutual information/agreement.
-
-Use `--input examples.json` for one or many JSON/JSONL records. Run a few
-models concurrently on two GPUs:
+One, a few, or all models from a file:
 
 ```bash
-bash scripts/1.1-all-inference.sh \
-  --gpus 0,1 --models xlmr,longformer,mdeberta-v3 \
-  --run-prefix hbs-few-smoke -- \
-  --dataset hbs --variant masked --input examples.json \
-  --mc-passes 8 --batch-size 4 --shard-size 16
+CUDA_VISIBLE_DEVICES=0,1 bash scripts/run-aspectbench.sh --inference \
+  --gpus 0,1 --models 'xlmr,longformer,mdeberta-v3' --dataset hbs \
+  --variant best --run-id hbs-few-inference \
+  --input data/hbs/hbs_test.json --limit 8 --mc-passes 8
+
+CUDA_VISIBLE_DEVICES=0,1,2,3 bash scripts/run-aspectbench.sh --inference \
+  --gpus 0,1,2,3 --models all --dataset sl --variant best \
+  --run-id sl-all-inference --input data/sl/slovene_test.json \
+  --limit 8 --mc-passes 8
 ```
 
-Replace the model list with `all` and use `--gpus 0,1,2,3` for the complete
-available grid. Missing release checkpoints are reported as skips only in the
-all-model selection; an explicitly requested missing checkpoint fails loudly.
+Each prediction contains class probabilities, confidence, entropy, top-two
+margin, MC expected entropy, mutual information, agreement, and variation
+ratio. An explicit unavailable model fails; `all` logs and skips unavailable
+released checkpoints.
 
-## 2. Start Gemma with llama.cpp or vLLM
+## 2. Full training and one-update smoke
 
-Test one backend at a time. The launcher starts the server in the background,
-writes its PID/log/manifest, and verifies `/v1/models`.
+Full training selects the best validation Macro-F1 checkpoint, stores the last
+optimizer state for exact resumption, then runs MC uncertainty on validation
+and every `--uncertainty-input NAME=PATH` split.
 
-llama.cpp on two visible GPUs (the local llama.cpp build controls how layers
-are split):
+```bash
+CUDA_VISIBLE_DEVICES=0,1,2,3 bash scripts/run-aspectbench.sh --train \
+  --gpus 0,1,2,3 --models all --dataset hbs --variant best \
+  --run-id hbs-full-train --train-input data/hbs/hbs_train_val_0.json \
+  --val-input data/hbs/hbs_train_val_0.json \
+  --uncertainty-input test=data/hbs/hbs_test.json \
+  --epochs 3 --batch-size 4 --mc-passes 10
+```
+
+The run-specific best checkpoint remains under `models/MODEL/.../RUN-ID/` and
+is also activated under `models/_active/` in the release-style layout. Add
+`--model-root models/_active` to later inference, DSPy query, or optimization
+commands to use user-trained checkpoints instead of `huggingface/models`.
+
+To prove forward/backward/update/save/reload without retraining:
+
+```bash
+CUDA_VISIBLE_DEVICES=0 bash scripts/run-aspectbench.sh --train --smoke \
+  --gpus 0 --models longformer --dataset hbs --variant masked \
+  --run-id longformer-update-smoke --input-doc "$ARTICLE" \
+  --sentiment 1 --batch-size 1 --learning-rate 1e-5
+```
+
+## 3. Serve Gemma and Qwen with vLLM
+
+Activate `vllm` in each server terminal. These commands use two GPUs per
+server (four total). The default student port is 8000 and teacher port 8001.
+
+```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
+conda activate vllm
+
+CUDA_VISIBLE_DEVICES=0,1 vllm serve \
+  models/gemma3-27b-qat/gemma-3-27b-it-q4_0.gguf \
+  --tokenizer models/gemma3-27b-qat --served-model-name gemma27b \
+  --host 0.0.0.0 --port 8000 --tensor-parallel-size 2 \
+  --max-model-len 12288 --gpu-memory-utilization 0.94
+```
+
+```bash
+CUDA_VISIBLE_DEVICES=2,3 vllm serve \
+  models/qwen2.5-72b/qwen2.5-72b-instruct-q4_k_m.gguf \
+  --tokenizer models/qwen2.5-72b --served-model-name qwen72b \
+  --host 0.0.0.0 --port 8001 --tensor-parallel-size 2 \
+  --max-model-len 12288 --gpu-memory-utilization 0.94 \
+  --chat-template backup/camera-ready/configs/chat-templates/qwen2_5_instruct_chat_template.jinja
+```
+
+The reusable launcher provides the same health checks, PID, manifest, and log:
 
 ```bash
 CUDA_VISIBLE_DEVICES=0,1 bash scripts/2.0-serve-llm.sh \
-  --backend llama-cpp --conda-env vllm \
-  --llama-server /path/to/llama.cpp/build/bin/llama-server \
-  --model /path/to/gemma-3-27b-it-q4_0.gguf \
-  --model-alias gemma27b --split-mode layer \
-  --port 8000 --run-id gemma-llama-cpp
+  --backend vllm --model models/gemma3-27b-qat/gemma-3-27b-it-q4_0.gguf \
+  --tokenizer models/gemma3-27b-qat --model-alias gemma27b \
+  --tensor-parallel-size 2 --max-model-len 12288 --port 8000 \
+  --run-id gemma-vllm
 ```
 
-vLLM tensor-parallel on two GPUs:
+Actual fit depends on the vLLM version’s GGUF support and tokenizer/config
+files. Use the llama.cpp path below if the quantized model does not load.
+
+## 4. Serve one Gemma per GPU with llama.cpp
+
+For a 48 GB A40/A6000, begin at `-c 196608 -np 16`: 12,288 context tokens
+per slot. If memory is insufficient, reduce both by the same factor:
+`98304/8`, then `49152/4`. For a 96 GB H100, `589824/48` retains the same
+per-slot budget. Do not reduce `-c` alone while keeping too many slots.
 
 ```bash
-CUDA_VISIBLE_DEVICES=0,1 bash scripts/2.0-serve-llm.sh \
-  --backend vllm --conda-env vllm \
-  --model /path/to/gemma-3-27b-it-q4_0.gguf \
-  --tokenizer /path/to/gemma-3-27b-text-config \
-  --model-alias gemma27b --tensor-parallel-size 2 \
-  --port 8000 --run-id gemma-vllm
+# Four independent 48 GB GPU endpoints at ports 18000-18003.
+GPU_IDS=0,1,2,3 PORTS=18000,18001,18002,18003 \
+LLAMA_SERVER=./llama.cpp/build/bin/llama-server \
+MODEL=models/gemma3-27b-qat/gemma-3-27b-it-q4_0.gguf \
+CONTEXT_SIZE=196608 PARALLEL=16 \
+bash scripts/2.3-launch-gemma-llama-cpp.sh
+
+# One 96 GB H100.
+CUDA_VISIBLE_DEVICES=0 bash scripts/2.0-serve-llm.sh \
+  --backend llama-cpp --llama-server ./llama.cpp/build/bin/llama-server \
+  --model models/gemma3-27b-qat/gemma-3-27b-it-q4_0.gguf \
+  --model-alias gemma27b --host 0.0.0.0 --port 8000 \
+  --context-size 589824 --parallel 48 --run-id gemma-h100
 ```
 
-Add `--dry-run` to inspect either resolved command without launching it.
+## 5. Query a precalibrated DSPy program
 
-## 3. DSPy inference with a packaged program
-
-Activate the DSPy environment while the endpoint remains running:
+DSPy first reuses the fine-tuned PLM(s) to produce uncertainty, then queries
+the program only for the lowest-confidence `GATE_RATE` fraction. PLM
+`VARIANT_MODE` and DSPy `PROMPT_VARIANTS` are independent settings.
 
 ```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
 conda activate vllm
-CUDA_VISIBLE_DEVICES=2 python scripts/2.1-dspy-inference.py \
-  --models longformer mdeberta-v3 bertic --primary-model longformer \
-  --dataset hbs --variant masked --input examples.json \
-  --endpoint-model gemma27b --api-base http://127.0.0.1:8000 \
-  --program selective-deferral-programs/longformer/hbs/masked/program.json \
-  --gate-rate 1.0 --mc-passes 8 --run-id hbs-dspy-smoke
+
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/vllm/bin/python \
+DATASET=hbs INPUT=data/hbs/hbs_test.json TASK_FILTER=all \
+VARIANT_MODE=best PROMPT_VARIANTS='masked unmasked' GATE_RATE=0.10 \
+STUDENT_API_BASES='http://127.0.0.1:18000/v1,http://127.0.0.1:18001/v1,http://127.0.0.1:18002/v1,http://127.0.0.1:18003/v1' \
+NUM_WORKERS_PER_ENDPOINTS='12,12,12,12' MAX_PARALLEL=1 \
+SKIP_ENDPOINT_CHECK=0 PROGRAM_SOURCE=precalibrated \
+bash scripts/2.4-query-dspy-programs.sh
 ```
 
-`--gate-rate 1.0` queries every smoke record; production values such as 0.10,
-0.20, or 0.30 query the least-confident fraction. Ungated records keep the PLM
-prediction. Endpoint failures are recorded as `failed-fallback`, keeping the
-primary prediction without losing completed shards. Add `--retry-failed` when
-resuming to query only those failed records again; the merged output keeps the
-latest version of each record.
-
-The same command accepts `--input-doc "$ARTICLE"` instead of a file. Select a
-different packaged or newly optimized JSON with `--program`; that resolved
-path is recorded in the run manifest.
-
-## 4. Real one-update fine-tuning smoke
-
-The article needs a gold label for a training update:
+Run several gate rates by wrapping the same command:
 
 ```bash
-conda activate absa
-CUDA_VISIBLE_DEVICES=0 python scripts/3.0-models-finetune.py \
-  --models longformer --dataset hbs --variant masked \
-  --input-doc "$ARTICLE" --sentiment 1 --batch-size 1 \
-  --learning-rate 1e-5 --run-id longformer-weight-update-smoke
+for G in 0.10 0.20 0.30; do
+  PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/vllm/bin/python \
+  DATASET=hbs INPUT=data/hbs/hbs_test.json TASK_FILTER=all \
+  VARIANT_MODE=best PROMPT_VARIANTS='masked unmasked' GATE_RATE="$G" \
+  STUDENT_API_BASES='http://l3icalcul07:18000/v1,http://l3icalcul07:18001/v1,http://l3icalcul07:18002/v1,http://l3icalcul07:18003/v1' \
+  NUM_WORKERS_PER_ENDPOINTS='12,12,12,12' \
+  bash scripts/2.4-query-dspy-programs.sh
+done
 ```
 
-This performs forward, backward, one AdamW step, save, strict reload, and one
-post-reload prediction. Inspect
-`models/_runs/training-smoke/longformer-weight-update-smoke/training-smoke-report.json`
-and the checkpoint under
-`models/longformer/hbs/masked/smoke/longformer-weight-update-smoke/`.
-
-Use the parallel launcher for a few or all models:
+For one record, use the direct CLI and replace `--input` with
+`--input-doc "$ARTICLE"`. A packaged program is resolved automatically:
 
 ```bash
-bash scripts/3.1-all-finetuning-smoke.sh \
-  --gpus 0,1,2,3 --models all --run-prefix hbs-all-train-smoke -- \
-  --dataset hbs --variant masked --input labeled-smoke.json \
-  --batch-size 1 --learning-rate 1e-5
+aspectbench defer-query --models longformer mdeberta-v3 bertic \
+  --primary-model longformer --dataset hbs --variant unmasked \
+  --prompt-variant masked --input-doc "$ARTICLE" \
+  --endpoint-model gemma27b --api-base http://127.0.0.1:8000/v1 \
+  --program-source precalibrated --gate-rate 1.0 --mc-passes 8 \
+  --run-id hbs-dspy-document-smoke
 ```
 
-## 5. Optimize, save, reload, and query a DSPy program
+## 6. Optimize and reuse a new DSPy program
 
-Use small, labeled train/validation files for the calibration smoke. They must
-be authorized local files and are never committed.
+Optimization uses labeled training/validation uncertainty only. It never
+selects prompts on the held-out test split. Student Gemma handles task calls;
+teacher Qwen proposes instructions. New programs are written to the ignored
+tree `selective-deferral-programs/optimized/MODEL/DATASET/PROMPT/RUN-ID/`.
 
 ```bash
-conda activate vllm
-CUDA_VISIBLE_DEVICES=2 python scripts/4.0-dspy-optimize.py \
-  --train-input data/hbs/smoke-train.json \
-  --val-input data/hbs/smoke-val.json \
-  --models longformer mdeberta-v3 bertic --primary-model longformer \
-  --dataset hbs --variant masked \
-  --endpoint-model gemma27b --api-base http://127.0.0.1:8000 \
-  --auto light --mc-passes 8 --run-id hbs-longformer-opt-smoke
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/vllm/bin/python \
+STUDENT_API_BASE=http://127.0.0.1:8000/v1 \
+TEACHER_API_BASE=http://127.0.0.1:8001/v1 \
+STUDENT_MODEL=gemma27b TEACHER_MODEL=qwen72b \
+DATASET=hbs TRAIN_INPUT=data/hbs/hbs_train_val_0.json \
+VAL_INPUT=data/hbs/hbs_train_val_0.json TASK_FILTER=longformer \
+VARIANT_MODE=best PROMPT_VARIANTS='masked unmasked' \
+MAX_PARALLEL=1 SKIP_ENDPOINT_CHECK=0 AUTO=light \
+bash scripts/4.2-optimize-dspy-programs.sh
 ```
 
-The reusable output is
-`models/_runs/dspy-optimization/hbs-longformer-opt-smoke/optimized-program.json`.
-Pass that exact path to `scripts/2.1-dspy-inference.py --program ...` to verify
-serialization and reuse.
-
-## 6. Monitor, resume, and clean up
+Reuse a generated program by setting its exact run ID:
 
 ```bash
-python scripts/9.0-progress.py models/_runs/inference/hbs-longformer-input-smoke
-tail -f models/_runs/inference/hbs-longformer-input-smoke/_logs/inference.log
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/vllm/bin/python \
+DATASET=hbs INPUT=data/hbs/hbs_test.json TASK_FILTER=longformer \
+VARIANT_MODE=best PROMPT_VARIANTS=masked PROGRAM_SOURCE=optimized \
+PROGRAM_RUN_ID=dspy-optimize-hbs-longformer-unmasked-masked \
+STUDENT_API_BASE=http://127.0.0.1:8000/v1 GATE_RATE=0.10 \
+bash scripts/2.4-query-dspy-programs.sh
+```
+
+## 7. Monitor, resume, and remove smoke artifacts
+
+```bash
+aspectbench progress models/_runs/inference/hbs-longformer-document-smoke
+tail -f models/_runs/inference/hbs-longformer-document-smoke/_logs/inference.log
 tail -f models/_runs/servers/gemma-vllm/_logs/server.log
+find models/_runs -name progress.json -print
 ```
 
-Rerun the same command and `--run-id` to resume. Use `--no-resume` when a
-pre-existing run should be treated as an error. Shards are written atomically
-before progress advances. When a smoke is no longer needed, remove only its
-explicit run directory and matching `models/<model>/.../smoke/<run-id>`
-directory. Stop a server with the PID recorded in its run directory, for
-example `kill "$(cat models/_runs/servers/gemma-vllm/server.pid)"`.
+Rerun the same command and `--run-id` to resume. `--no-resume` fails if a run
+already exists. Stop a managed server with the PID in its run directory, for
+example `kill "$(cat models/_runs/servers/gemma-vllm/server.pid)"`. Remove only
+the explicit smoke run and matching `models/MODEL/LANGUAGE/VARIANT/.../RUN-ID`
+checkpoint directory after inspection; training and inference shards are
+otherwise reusable.

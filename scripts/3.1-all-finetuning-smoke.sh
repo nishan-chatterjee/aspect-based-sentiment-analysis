@@ -26,6 +26,7 @@ if [[ "$MODELS" == "all" ]]; then
   ALL_REQUESTED="1"
   [[ "$DATASET" == "hbs" ]] && MODELS="xlmr,han-xlmr,longformer,mdeberta-v3,mt5,bertic,bge-m3-mlp" || MODELS="xlmr,han-xlmr,longformer,mdeberta-v3,mt5,sloberta,bge-m3-mlp"
 fi
+MODELS="${MODELS// /,}"
 IFS=',' read -r -a gpu_array <<< "$GPUS"
 IFS=',' read -r -a model_array <<< "$MODELS"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -38,7 +39,7 @@ for index in "${!model_array[@]}"; do
   echo "[$model] CUDA device $gpu; log $log"
   availability_flags=()
   [[ "$ALL_REQUESTED" == "1" ]] && availability_flags+=(--skip-unavailable)
-  CUDA_VISIBLE_DEVICES="$gpu" python "$SCRIPT_DIR/3.0-models-finetune.py" \
+  CUDA_VISIBLE_DEVICES="$gpu" python "$SCRIPT_DIR/3.2-models-finetune-smoke.py" \
     --models "$model" --run-id "${RUN_PREFIX}-${model}" "${availability_flags[@]}" "$@" >"$log" 2>&1 &
   pids+=("$!")
   if (( ${#pids[@]} >= ${#gpu_array[@]} )); then
