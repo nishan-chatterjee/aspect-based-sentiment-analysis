@@ -37,6 +37,8 @@ selective-deferral-programs/optimized/
 selective-deferral-programs/**/*.private.json
 
 # Record-level outputs may reproduce source text.
+outputs/*
+!outputs/README.md
 *_predictions.json
 *-predictions.json
 predictions.json

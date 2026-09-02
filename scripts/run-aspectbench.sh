@@ -8,6 +8,10 @@ GPUS="0"
 DATASET=""
 VARIANT="best"
 RUN_ID=""
+OUTPUT_ROOT="outputs"
+FILENAME="predictions"
+SEED="42"
+PYTHON_BIN="${PYTHON_BIN:-python}"
 FORWARDED=()
 
 usage() {
@@ -22,8 +26,13 @@ Orchestration options:
   --dataset hbs|sl
   --variant best|masked|unmasked|both
   --run-id NAME
+  --output-root DIR
+  --filename predictions|timestamp|seed|STEM
+  --seed INTEGER
 
-All remaining flags are forwarded to the numbered inference or training CLI.
+Inference schedules model/variant tasks independently, then combines them into
+detailed, majority-vote, and confidence-vote files. All remaining flags are
+forwarded to the numbered inference or training CLI.
 EOF
 }
 
@@ -37,6 +46,9 @@ while [[ $# -gt 0 ]]; do
     --dataset) DATASET="$2"; FORWARDED+=(--dataset "$2"); shift 2 ;;
     --variant) VARIANT="$2"; shift 2 ;;
     --run-id) RUN_ID="$2"; shift 2 ;;
+    --output-root) OUTPUT_ROOT="$2"; shift 2 ;;
+    --filename) FILENAME="$2"; shift 2 ;;
+    --seed) SEED="$2"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     *) FORWARDED+=("$1"); shift ;;
   esac
@@ -100,6 +112,7 @@ for model in "${model_array[@]}"; do
 done
 
 pids=()
+prediction_paths=()
 for index in "${!task_models[@]}"; do
   model="${task_models[$index]}"
   prompt_variant="${task_variants[$index]}"
@@ -108,10 +121,16 @@ for index in "${!task_models[@]}"; do
   log="models/_runs/_launcher-logs/${task_run_id}.log"
   availability_flags=()
   [[ "$ALL_REQUESTED" == "1" ]] && availability_flags+=(--skip-unavailable)
+  publish_flags=()
+  if [[ "$ACTION" == "inference" ]]; then
+    publish_flags+=(--no-publish)
+    prediction_paths+=("models/_runs/inference/${task_run_id}/predictions.json")
+  fi
   echo "[$ACTION/$model/$prompt_variant] GPU $gpu; log $log"
-  CUDA_VISIBLE_DEVICES="$gpu" python "$ENTRY" \
+  CUDA_VISIBLE_DEVICES="$gpu" "$PYTHON_BIN" "$ENTRY" \
     --models "$model" --variant "$prompt_variant" --run-id "$task_run_id" \
-    "${availability_flags[@]}" "${FORWARDED[@]}" >"$log" 2>&1 &
+    --seed "$SEED" "${availability_flags[@]}" "${publish_flags[@]}" \
+    "${FORWARDED[@]}" >"$log" 2>&1 &
   pids+=("$!")
   if (( ${#pids[@]} >= ${#gpu_array[@]} )); then
     wait "${pids[0]}"
@@ -119,4 +138,10 @@ for index in "${!task_models[@]}"; do
   fi
 done
 for pid in "${pids[@]}"; do wait "$pid"; done
+if [[ "$ACTION" == "inference" ]]; then
+  "$PYTHON_BIN" "$SCRIPT_DIR/1.2-aggregate-inference.py" \
+    --predictions "${prediction_paths[@]}" --dataset "$DATASET" \
+    --run-id "$RUN_ID" --output-root "$OUTPUT_ROOT" \
+    --filename "$FILENAME" --seed "$SEED"
+fi
 echo "All requested tasks completed. Logs: models/_runs/_launcher-logs/"

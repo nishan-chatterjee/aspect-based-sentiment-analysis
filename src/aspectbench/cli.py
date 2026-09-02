@@ -33,10 +33,11 @@ def _input_records(args: argparse.Namespace, *, labeled: bool = False) -> list[d
 
 
 def _infer_command(args: argparse.Namespace) -> int:
-    from .inference import run_inference
+    from .inference import build_ensemble_rows, publish_inference_outputs, run_inference
 
+    records = _input_records(args)
     output = run_inference(
-        _input_records(args),
+        records,
         models=args.models,
         language=args.dataset,
         variant=args.variant,
@@ -53,7 +54,59 @@ def _infer_command(args: argparse.Namespace) -> int:
         resume=args.resume,
         skip_unavailable=args.skip_unavailable,
     )
-    print(output.resolve())
+    rows = json.loads(output.read_text(encoding="utf-8"))
+    if args.publish:
+        raw_path, ensemble_path = publish_inference_outputs(
+            rows,
+            dataset=args.dataset,
+            run_id=args.run_id,
+            output_root=args.output_root,
+            filename=args.filename,
+            seed=args.seed,
+        )
+        if args.input_doc:
+            ensemble = build_ensemble_rows(rows)
+            if ensemble:
+                summary = {
+                    "experts": [
+                        {
+                            key: expert[key]
+                            for key in (
+                                "model",
+                                "variant",
+                                "prediction",
+                                "prediction_name",
+                                "confidence",
+                            )
+                        }
+                        for expert in ensemble[0]["experts"]
+                    ],
+                    "majority_vote": ensemble[0]["majority_vote"],
+                    "confidence_vote": ensemble[0]["confidence_vote"],
+                }
+                _json_dump(summary, None)
+        print(f"Detailed predictions: {raw_path.resolve()}")
+        print(f"Ensemble predictions: {ensemble_path.resolve()}")
+    print(f"Resumable run state: {output.resolve()}")
+    return 0
+
+
+def _aggregate_inference_command(args: argparse.Namespace) -> int:
+    from .inference import load_prediction_files, publish_inference_outputs
+
+    rows = load_prediction_files(args.predictions)
+    if not rows:
+        raise ValueError("No expert predictions were available to aggregate.")
+    raw_path, ensemble_path = publish_inference_outputs(
+        rows,
+        dataset=args.dataset,
+        run_id=args.run_id,
+        output_root=args.output_root,
+        filename=args.filename,
+        seed=args.seed,
+    )
+    print(f"Detailed predictions: {raw_path.resolve()}")
+    print(f"Ensemble predictions: {ensemble_path.resolve()}")
     return 0
 
 
@@ -384,7 +437,29 @@ def build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Defaults to true for --models all and false for explicit models.",
     )
+    infer.add_argument("--output-root", default="outputs")
+    infer.add_argument(
+        "--filename",
+        default="predictions",
+        help="File stem, 'timestamp', or 'seed' (JSON is added automatically).",
+    )
+    infer.add_argument(
+        "--publish", action=argparse.BooleanOptionalAction, default=True,
+        help="Publish user-facing detailed and ensemble files under --output-root.",
+    )
     infer.set_defaults(handler=_infer_command)
+
+    aggregate = subparsers.add_parser(
+        "aggregate-inference",
+        help="Combine independently scheduled expert predictions into ensemble output.",
+    )
+    aggregate.add_argument("--predictions", nargs="+", required=True)
+    aggregate.add_argument("--dataset", required=True, help="hbs or sl")
+    aggregate.add_argument("--run-id", required=True)
+    aggregate.add_argument("--output-root", default="outputs")
+    aggregate.add_argument("--filename", default="predictions")
+    aggregate.add_argument("--seed", type=int, default=42)
+    aggregate.set_defaults(handler=_aggregate_inference_command)
 
     train = subparsers.add_parser(
         "train-smoke", help="Run one optimizer update and checkpoint/reload verification."
