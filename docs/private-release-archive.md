@@ -16,6 +16,9 @@ The distinction is in ignored contents:
 - `selective-deferral-programs/private-originals/` may contain authorized
   internal originals, including programs excluded from public Git.
 
+The data and model assets are independent byte copies, not symlinks or hard
+links to the public working directory.
+
 This archive is private even though its code layout mirrors the public repo.
 Do not initialize, force-add, or push it: Slovenian records and some original
 DSPy instructions are not publication-safe. Public Git receives only the

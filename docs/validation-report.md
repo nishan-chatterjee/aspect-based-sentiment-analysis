@@ -23,9 +23,10 @@ Final local release audit: 2026-09-02.
   and `8199a697259eb9f2b8fd484682a8a5ecfbb17eb0600eefa198ff0430e11410a0`.
   Git reports both model trees as ignored.
 - The private release archive mirrors every tracked public file except its
-  intentionally private root README. Its runnable data/model paths share the
-  verified files, while complete release packages and all internal prompt
-  originals remain in explicitly private subtrees.
+  intentionally private root README. Its runnable data/model paths contain
+  independent copies with matching checksums and distinct inodes, while
+  complete release packages and all internal prompt originals remain in
+  explicitly private subtrees.
 - GitHub `origin/main` matched the audited local head after a normal
   fast-forward push; the remote exposes no `backup` or `legacy` branch.
 
