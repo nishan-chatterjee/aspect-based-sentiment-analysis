@@ -19,7 +19,9 @@ for environment in absa vllm; do
   else
     conda env create --file "$yaml"
   fi
-  conda run --name "$environment" python -m pip install -e "$ROOT" --no-deps
-  conda run --name "$environment" aspectbench models --models all >/dev/null
+  conda run --no-capture-output --name "$environment" \
+    python -m pip install -e "$ROOT" --no-deps --no-build-isolation
+  conda run --no-capture-output --name "$environment" \
+    python -m aspectbench.cli models --models all >/dev/null
   echo "Installed AspectBench command in '$environment'."
 done
