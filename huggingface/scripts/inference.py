@@ -366,7 +366,7 @@ class InferenceEngine:
             raise ValueError("language must be hbs/slovenian and mode masked/unmasked")
         selection = CHECKPOINTS[(model_name, language, mode)]
         self.weight_path = weight_path(model_root, model_name, language, mode)
-        if not selection["available"]:
+        if not selection["available"] and not self.weight_path.is_file():
             raise FileNotFoundError(selection["unavailable_reason"])
         if not self.weight_path.is_file():
             raise FileNotFoundError(self.weight_path)

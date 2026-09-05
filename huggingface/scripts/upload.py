@@ -106,7 +106,11 @@ def main() -> None:
                 repo_id=repo_id,
                 repo_type="model",
                 folder_path=folder,
-                ignore_patterns=["**/__pycache__/**", "**/*.pyc"],
+                ignore_patterns=[
+                    "**/__pycache__/**",
+                    "**/*.pyc",
+                    "training/**",
+                ],
                 commit_message="Add canonical HBS and Slovenian checkpoints",
                 token=args.token,
             )

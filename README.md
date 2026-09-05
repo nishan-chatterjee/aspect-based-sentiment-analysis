@@ -283,6 +283,53 @@ CUDA_VISIBLE_DEVICES=0,1 bash scripts/run-aspectbench.sh --inference \
   --input data/hbs/hbs_test.json --filename seed --seed 42
 ```
 
+### Recover the four missing BGE-M3 + MLP release heads
+
+The dedicated four-GPU launcher trains the HBS/Slovenian × masked/unmasked
+grid. Each GPU encodes one dataset/variant once, caches restart-safe normalized
+BGE-M3 embeddings, then trains the 512→256→3 MLP on splits 0, 1, and 2. It
+selects the release head by validation Macro-F1 and only then evaluates and
+compares all three split heads with the paper values.
+
+```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
+conda activate absa
+cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis
+
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 \
+RUN_ID=bge-m3-paper-recovery \
+EMBEDDING_BATCH_SIZE=8 \
+bash scripts/3.3-train-bge-m3-mlp-four-gpu.sh
+```
+
+Re-run the identical command to resume completed embedding shards and epochs.
+If BGE embedding runs out of memory on a long batch, use
+`EMBEDDING_BATCH_SIZE=4` or `2`; this does not change the MLP batch size or
+release layout. Float32 embedding is the reproducibility default, and the
+launcher pins the BGE-M3 revision recorded in its cache manifest. The four
+selected tensor-only heads are promoted to:
+
+```text
+huggingface/models/bge-m3-mlp/hbs/masked.pt
+huggingface/models/bge-m3-mlp/hbs/unmasked.pt
+huggingface/models/bge-m3-mlp/slovenian/masked.pt
+huggingface/models/bge-m3-mlp/slovenian/unmasked.pt
+```
+
+Private cache, optimizer state, logs, predictions, per-class/seen-unseen
+reports, and `comparison-to-paper.json` remain under
+`huggingface/models/bge-m3-mlp/training/` and are ignored by Git and the model
+upload. Monitor with:
+
+```bash
+tail -F huggingface/models/bge-m3-mlp/training/runs/bge-m3-paper-recovery/_logs/*.log
+```
+
+Do not upload immediately after training. First run the BGE-only inference
+validator and inspect the paper-delta report; the Hugging Face upload command
+remains a dry run unless `--execute` is explicitly supplied.
+
 ## Precalibrated and newly optimized DSPy programs
 
 Audited paper-time programs are tracked at:

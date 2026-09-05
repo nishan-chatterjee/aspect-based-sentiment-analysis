@@ -250,6 +250,38 @@ CHECKPOINTS: dict[tuple[str, str, str], dict[str, Any]] = {
 }
 
 
+def _apply_local_release_metadata() -> None:
+    """Expose newly retrained slots before their metadata reaches the remote."""
+
+    models_root = Path(__file__).resolve().parents[1] / "models"
+    for model_name in MODEL_SPECS:
+        path = models_root / model_name / "availability.json"
+        if not path.is_file():
+            continue
+        try:
+            import json
+
+            entries = json.loads(path.read_text(encoding="utf-8"))["entries"]
+        except (KeyError, OSError, TypeError, ValueError):
+            continue
+        for entry in entries:
+            key = (model_name, entry.get("language"), entry.get("mode"))
+            weight = models_root / model_name / str(entry.get("weight_path", "")).split(
+                f"{model_name}/", 1
+            )[-1]
+            if key not in CHECKPOINTS or not entry.get("available") or not weight.is_file():
+                continue
+            CHECKPOINTS[key].update(
+                available=True,
+                unavailable_reason=None,
+                validation_macro_f1=entry.get("validation_macro_f1"),
+                run=entry.get("selected_split", CHECKPOINTS[key].get("run")),
+            )
+
+
+_apply_local_release_metadata()
+
+
 def model_spec(model_name: str, language: str) -> dict[str, Any]:
     spec = dict(MODEL_SPECS[model_name])
     for key in ("base_model", "local_base_dir"):

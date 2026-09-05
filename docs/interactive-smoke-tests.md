@@ -213,7 +213,57 @@ STUDENT_API_BASE=http://127.0.0.1:8000/v1 GATE_RATE=0.10 \
 bash scripts/2.4-query-dspy-programs.sh
 ```
 
-## 7. Monitor, resume, and remove smoke artifacts
+## 7. Train the four missing BGE-M3 + MLP heads on four GPUs
+
+This recovery launcher assigns HBS masked/unmasked and Slovenian
+masked/unmasked to GPUs 0–3. Each task caches embeddings once and trains all
+three fixed split files. Keep the same `RUN_ID` when resuming.
+
+```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
+conda activate absa
+cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis
+
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 RUN_ID=bge-m3-paper-recovery \
+EMBEDDING_BATCH_SIZE=8 EMBEDDING_PRECISION=float32 \
+bash scripts/3.3-train-bge-m3-mlp-four-gpu.sh
+```
+
+In a second terminal, monitor without interrupting the jobs:
+
+```bash
+watch -n 5 nvidia-smi
+tail -F huggingface/models/bge-m3-mlp/training/runs/bge-m3-paper-recovery/_logs/*.log
+```
+
+If embedding OOMs, rerun the same command with
+`EMBEDDING_BATCH_SIZE=4` (then `2` if necessary). Finished embedding shards
+and epochs are retained. The BGE revision is pinned and recorded in the cache
+manifest. After all four processes succeed, the launcher
+updates local release metadata and writes:
+
+```text
+huggingface/models/bge-m3-mlp/training/runs/bge-m3-paper-recovery/comparison-to-paper.json
+```
+
+Validate all four promoted heads before considering upload:
+
+```bash
+python huggingface/scripts/validate_all.py \
+  --model bge-m3-mlp --model-root huggingface/models \
+  --examples-root huggingface/examples --device cuda --batch-size 10 \
+  --mc-passes 2 --require-complete-matrix \
+  --output huggingface/models/bge-m3-mlp/training/runs/bge-m3-paper-recovery/inference-validation.json
+
+# This only prints the intended private upload; it does not upload.
+python huggingface/scripts/upload.py --root huggingface --model bge-m3-mlp
+```
+
+Do not add `--execute` until the comparison and inference-validation reports
+have been reviewed.
+
+## 8. Monitor, resume, and remove smoke artifacts
 
 ```bash
 aspectbench progress models/_runs/inference/hbs-longformer-document-smoke

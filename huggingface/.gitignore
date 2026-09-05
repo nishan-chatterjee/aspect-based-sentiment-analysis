@@ -1,4 +1,5 @@
 models/**/*.pt
+models/bge-m3-mlp/training/
 validation-report.json
 validation-runs/
 logs/
