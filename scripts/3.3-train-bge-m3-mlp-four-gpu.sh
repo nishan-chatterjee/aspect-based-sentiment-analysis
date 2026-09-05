@@ -54,7 +54,10 @@ done
 
 run_root="$OUTPUT_ROOT/training/runs/$RUN_ID"
 log_root="$run_root/_logs"
-mkdir -p "$log_root"
+if [[ "$DRY_RUN" != "1" ]] && ! mkdir -p "$log_root"; then
+  echo "Cannot create training log directory: $log_root" >&2
+  exit 2
+fi
 
 datasets=(hbs hbs sl sl)
 variants=(masked unmasked masked unmasked)
