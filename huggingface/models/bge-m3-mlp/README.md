@@ -9,32 +9,31 @@ license: other
 
 # AspectBench BGE-M3 dense + MLP
 
-This repository reserves the release location for the HBS and Slovenian
-document-level aspect-based sentiment analysis checkpoints for this family.
+Selected model-only heads for normalized 1024-dimensional `BAAI/bge-m3`
+document embeddings. Each released head is the best validation Macro-F1 result
+among three fixed train/validation splits; test results were not used for
+selection. The shared inference toolkit reconstructs the 1024→512→256→3 MLP.
 
-## Checkpoint status
+| Language | Mode | Status | Selected validation Macro-F1 | Mean test Macro-F1 (3 splits) | Mean test QWK (3 splits) |
+|---|---|---|---:|---:|---:|
+| hbs | masked | Available (retrained) | 0.8851 | 0.7866 | 0.7572 |
+| hbs | unmasked | Available (retrained) | 0.8856 | 0.7861 | 0.7551 |
+| slovenian | masked | Available (retrained) | 0.7529 | 0.6528 | 0.6538 |
+| slovenian | unmasked | Available (retrained) | 0.7578 | 0.6737 | 0.6458 |
 
-| Language | Mode | Status | Best validation Macro-F1 |
-|---|---|---|---:|
-| hbs | masked | Checkpoint file unavailable | 0.8841 |
-| hbs | unmasked | Checkpoint file unavailable | 0.8895 |
-| slovenian | masked | Checkpoint file unavailable | 0.7514 |
-| slovenian | unmasked | Checkpoint file unavailable | 0.7393 |
+Masked training reproduces the historical implementation used for the paper:
+tagged mentions become `[ASPECT_MENTION]` and `[ASPECT_NAME]` is appended.
+Unmasked training removes the literal XML-like aspect tags. Complete metrics,
+per-class results, seen/unseen reports, seeds, and paper deltas are retained in
+the private ignored training run before upload.
 
-The validation results survived, but none of the four selected trained MLP-head
-files are present in the source tree or model archive. Consequently this
-repository currently contains metadata only and cannot be used for inference.
-The heads must be recovered or retrained before `masked.pt` and `unmasked.pt`
-can be published. No checkpoint from another architecture or mode is used as a
-substitute.
+## Use
 
-Input articles will use the same literal target markup as the other
-AspectBench families:
-
-```text
-Tokom šestonedeljnog testiranja, redakcija je više puta kontaktirala <aspect>Primer Grupu</aspect> zbog nove usluge. Prvi odgovor <aspect>Primer Grupe</aspect> stigao je istog dana, a tehnički tim je zatim otklonio prijavljenu grešku bez dodatnih troškova. U završnom upitniku većina korisnika ocenila je podršku kao jasnu i pouzdanu.
-```
+Download this repository beneath the toolkit at
+`huggingface/models/bge-m3-mlp/`, then run `aspectbench infer --models
+bge-m3-mlp ...`. The checkpoint files contain tensors only—no optimizer state,
+dataset rows, or cached embeddings.
 
 See the shared toolkit at
 [`nishan-chatterjee/aspect-based-sentiment-analysis`](https://huggingface.co/nishan-chatterjee/aspect-based-sentiment-analysis)
-for the available model families and validation tooling.
+for input examples, uncertainty output, and validation commands.

@@ -5,45 +5,61 @@
       "model": "bge-m3-mlp",
       "language": "hbs",
       "mode": "masked",
-      "validation_macro_f1": 0.8840815245920188,
-      "available": false,
-      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "validation_macro_f1": 0.8851188261378907,
+      "available": true,
+      "unavailable_reason": null,
       "base_model": "BAAI/bge-m3",
       "weight_path": "bge-m3-mlp/hbs/masked.pt",
-      "status": "unavailable"
+      "status": "available_retrained",
+      "selected_split": 2,
+      "sha256": "aa834ec3b5013575e1019c90d24617b6f8f83eda7b0b50209eca48ae62d7cdfb",
+      "test_macro_f1_mean": 0.7866438262299043,
+      "test_qwk_mean": 0.7572206316161415
     },
     {
       "model": "bge-m3-mlp",
       "language": "hbs",
       "mode": "unmasked",
-      "validation_macro_f1": 0.8894579185247774,
-      "available": false,
-      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "validation_macro_f1": 0.8856235866538147,
+      "available": true,
+      "unavailable_reason": null,
       "base_model": "BAAI/bge-m3",
       "weight_path": "bge-m3-mlp/hbs/unmasked.pt",
-      "status": "unavailable"
+      "status": "available_retrained",
+      "selected_split": 1,
+      "sha256": "67a0e1b42f74df9c391e2e0d6697341130576abb4f1aed835d746ed7c83685fa",
+      "test_macro_f1_mean": 0.7861106133818367,
+      "test_qwk_mean": 0.7550832183774251
     },
     {
       "model": "bge-m3-mlp",
       "language": "slovenian",
       "mode": "masked",
-      "validation_macro_f1": 0.7514188081139693,
-      "available": false,
-      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "validation_macro_f1": 0.752929869396931,
+      "available": true,
+      "unavailable_reason": null,
       "base_model": "BAAI/bge-m3",
       "weight_path": "bge-m3-mlp/slovenian/masked.pt",
-      "status": "unavailable"
+      "status": "available_retrained",
+      "selected_split": 1,
+      "sha256": "3f50acbd2f0a667b471601c21cb4d5c86fa0c7ae57f1ba2bc057ffffe36ad541",
+      "test_macro_f1_mean": 0.6528159044496872,
+      "test_qwk_mean": 0.6537687573106927
     },
     {
       "model": "bge-m3-mlp",
       "language": "slovenian",
       "mode": "unmasked",
-      "validation_macro_f1": 0.7393257242124599,
-      "available": false,
-      "unavailable_reason": "Validation metrics exist, but the selected trained dense MLP head file is absent.",
+      "validation_macro_f1": 0.7577629625196561,
+      "available": true,
+      "unavailable_reason": null,
       "base_model": "BAAI/bge-m3",
       "weight_path": "bge-m3-mlp/slovenian/unmasked.pt",
-      "status": "unavailable"
+      "status": "available_retrained",
+      "selected_split": 1,
+      "sha256": "99e0765a9005a2dd04d55ea2f191a0013e974d5c321d517c8f7f88c69dcb2f2b",
+      "test_macro_f1_mean": 0.6737403585623064,
+      "test_qwk_mean": 0.6457883432875997
     }
   ]
 }
