@@ -25,6 +25,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Upload only the shared toolkit repository, not model repositories.",
     )
+    parser.add_argument(
+        "--models-only",
+        action="store_true",
+        help="Upload only the selected model repositories, not the shared toolkit.",
+    )
     parser.add_argument("--token", help="Normally omitted; the saved HF token is used.")
     parser.add_argument(
         "--execute",
@@ -57,8 +62,12 @@ def main() -> None:
         )
     if args.toolkit_only and args.model:
         raise RuntimeError("--toolkit-only cannot be combined with --model.")
+    if args.toolkit_only and args.models_only:
+        raise RuntimeError("--toolkit-only cannot be combined with --models-only.")
     selected = [] if args.toolkit_only else (args.model or list(MODEL_SPECS))
-    operations: list[tuple[str, Path, bool]] = [(TOOLKIT_REPO, root, True)]
+    operations: list[tuple[str, Path, bool]] = []
+    if not args.models_only:
+        operations.append((TOOLKIT_REPO, root, True))
     for model_name in selected:
         family = root / "models" / model_name
         if available_count(family) == 0:

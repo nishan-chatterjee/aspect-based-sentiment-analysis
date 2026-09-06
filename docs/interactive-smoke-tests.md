@@ -257,7 +257,7 @@ python huggingface/scripts/validate_all.py \
   --output huggingface/models/bge-m3-mlp/training/runs/bge-m3-paper-recovery/inference-validation.json
 
 # This only prints the intended private upload; it does not upload.
-python huggingface/scripts/upload.py --root huggingface --model bge-m3-mlp
+python huggingface/scripts/upload.py --root huggingface --models-only --model bge-m3-mlp
 ```
 
 Do not add `--execute` until the comparison and inference-validation reports
