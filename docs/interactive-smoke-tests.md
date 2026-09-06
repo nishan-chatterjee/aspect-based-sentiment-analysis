@@ -263,7 +263,41 @@ python huggingface/scripts/upload.py --root huggingface --models-only --model bg
 Do not add `--execute` until the comparison and inference-validation reports
 have been reviewed.
 
-## 8. Monitor, resume, and remove smoke artifacts
+## 8. Train the remaining XLM-R/HAN-XLM-R heads on four GPUs
+
+The remaining grid is XLM-R/HAN-XLM-R × HBS/Slovenian, unmasked only. Each GPU
+trains all three fixed splits. On a 48 GB A40/A6000, begin with HAN micro-batch
+2 and effective batch 32:
+
+```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
+conda activate absa
+cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis
+
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 RUN_ID=xlmr-han-paper-recovery \
+HAN_BATCH_SIZE=2 HAN_EFFECTIVE_BATCH_SIZE=32 \
+bash scripts/3.5-train-missing-transformers-four-gpu.sh
+```
+
+Use the identical `RUN_ID` to resume. A split writes
+`last-training-state.pt` every `CHECKPOINT_EVERY_STEPS=100` optimizer steps and
+after every epoch; completed splits have `_SUCCESS.json` and are skipped. If
+HAN OOMs before writing state, choose a new run ID and set `HAN_BATCH_SIZE=1`.
+Changing a configuration under an existing run ID is rejected deliberately.
+
+```bash
+tail -F huggingface/models/_recovery/runs/xlmr-han-paper-recovery/_logs/*.log
+find huggingface/models/{xlmr,han-xlmr}/training/runs/xlmr-han-paper-recovery \
+  -name training-report.json -o -name _SUCCESS.json -o -name selection.json
+```
+
+After all four jobs complete, the launcher promotes the four unmasked heads and
+writes the cross-family paper comparison under
+`huggingface/models/_recovery/runs/RUN_ID/comparison-to-paper.json`. Validate
+before a model-only upload; training directories are excluded automatically.
+
+## 9. Monitor, resume, and remove smoke artifacts
 
 ```bash
 aspectbench progress models/_runs/inference/hbs-longformer-document-smoke

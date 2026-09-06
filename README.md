@@ -283,13 +283,19 @@ CUDA_VISIBLE_DEVICES=0,1 bash scripts/run-aspectbench.sh --inference \
   --input data/hbs/hbs_test.json --filename seed --seed 42
 ```
 
-### Recover the four missing BGE-M3 + MLP release heads
+### Reproduce the recovered BGE-M3 + MLP release heads
 
 The dedicated four-GPU launcher trains the HBS/Slovenian × masked/unmasked
 grid. Each GPU encodes one dataset/variant once, caches restart-safe normalized
 BGE-M3 embeddings, then trains the 512→256→3 MLP on splits 0, 1, and 2. It
 selects the release head by validation Macro-F1 and only then evaluates and
 compares all three split heads with the paper values.
+
+The canonical four-head recovery (`bge-m3-paper-recovery`) completed without a
+material paper-metric difference and passed all four single/batch inference
+checks. The tensor-only heads are stored in the private
+`nishan-chatterjee/aspectbench-bge-m3-mlp` repository; the command below is the
+fully reproducible training path, not a prerequisite for ordinary inference.
 
 ```bash
 source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
@@ -329,6 +335,64 @@ tail -F huggingface/models/bge-m3-mlp/training/runs/bge-m3-paper-recovery/_logs/
 Do not upload immediately after training. First run the BGE-only inference
 validator and inspect the paper-delta report; the Hugging Face upload command
 remains a dry run unless `--execute` is explicitly supplied.
+
+### Recover the remaining XLM-R and HAN-XLM-R heads
+
+After the BGE recovery, the only four unavailable release slots are the
+unmasked XLM-R and HAN-XLM-R heads for HBS and Slovenian. This launcher assigns
+one slot to each of four 48 GB A40/A6000 GPUs. Every process trains fixed splits
+0, 1, and 2, selects by validation Macro-F1, evaluates all split heads on test,
+and promotes one tensor-only checkpoint to the matching Hugging Face path.
+
+```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
+conda activate absa
+cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis
+
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 \
+RUN_ID=xlmr-han-paper-recovery \
+HAN_BATCH_SIZE=2 \
+HAN_EFFECTIVE_BATCH_SIZE=32 \
+bash scripts/3.5-train-missing-transformers-four-gpu.sh
+```
+
+Re-run that exact command and `RUN_ID` after a preemption. Completed splits are
+skipped, and an interrupted split resumes from its most recent optimizer-step
+checkpoint (every 100 steps by default) rather than restarting. The XLM-R jobs
+use the paper configuration (10 epochs, batch 32, 2e-5); the HAN jobs use 10
+epochs, 1e-5, 128 sentences × 96 tokens, and effective batch 32. If HAN exceeds
+48 GB, use a new `RUN_ID` with `HAN_BATCH_SIZE=1`; accumulation is adjusted
+automatically, so the effective batch remains 32. Micro-batch size is part of
+the run manifest, and changing it under an existing run ID is rejected.
+
+Monitor and inspect the eventual outputs with:
+
+```bash
+tail -F huggingface/models/_recovery/runs/xlmr-han-paper-recovery/_logs/*.log
+
+find huggingface/models/{xlmr,han-xlmr}/training/runs/xlmr-han-paper-recovery \
+  -name training-report.json -o -name selection.json
+
+cat huggingface/models/_recovery/runs/xlmr-han-paper-recovery/comparison-to-paper.json
+```
+
+The promoted paths are
+`huggingface/models/{xlmr,han-xlmr}/{hbs,slovenian}/unmasked.pt`. Training
+states, row-level predictions, and logs are ignored by Git and by Hugging Face
+uploads. Validate both families before upload:
+
+```bash
+python huggingface/scripts/validate_all.py \
+  --model xlmr --model han-xlmr --model-root huggingface/models \
+  --examples-root huggingface/examples --device cuda --batch-size 1 \
+  --mc-passes 2 --require-complete-matrix \
+  --output huggingface/models/_recovery/runs/xlmr-han-paper-recovery/inference-validation.json
+
+# Dry run: exactly the two model repositories, never the shared toolkit.
+python huggingface/scripts/upload.py --root huggingface --models-only \
+  --model xlmr --model han-xlmr
+```
 
 ## Precalibrated and newly optimized DSPy programs
 

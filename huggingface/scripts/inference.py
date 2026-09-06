@@ -256,9 +256,10 @@ class SimplifiedDARTModel(nn.Module):
         max_sentences: int = 128,
         final_mlp_hidden_dim: int = 256,
         dropout_rate: float = 0.2,
+        base_model: nn.Module | None = None,
     ) -> None:
         super().__init__()
-        self.base_model = AutoModel.from_config(base_config)
+        self.base_model = base_model or AutoModel.from_config(base_config)
         _resize_embeddings(self.base_model, tokenizer_len)
         self.hidden_dim = base_config.hidden_size
         self.dropout = nn.Dropout(dropout_rate)
@@ -295,13 +296,28 @@ class SimplifiedDARTModel(nn.Module):
         aspect_target_token_id: torch.Tensor,
     ) -> torch.Tensor:
         batch_size, sentence_count, token_count = input_ids.shape
+        # Padded sentence slots carry no information and are masked everywhere
+        # downstream. Encoding only real sentences preserves the computation for
+        # those slots while making the paper's 128 x 96 layout practical on 48 GB
+        # GPUs.
+        valid = sentence_mask.view(-1).bool()
+        if not bool(valid.any()):
+            raise ValueError("Every HAN batch item must contain a non-empty sentence.")
+        flat_ids = input_ids.view(-1, token_count)
+        flat_attention = attention_mask.view(-1, token_count)
         outputs = self.base_model(
-            input_ids=input_ids.view(-1, token_count),
-            attention_mask=attention_mask.view(-1, token_count),
+            input_ids=flat_ids[valid],
+            attention_mask=flat_attention[valid],
         )
-        cls = outputs.last_hidden_state[:, 0, :].view(
-            batch_size, sentence_count, self.hidden_dim
+        cls_flat = outputs.last_hidden_state.new_zeros(
+            (batch_size * sentence_count, self.hidden_dim)
         )
+        cls_flat = cls_flat.index_copy(
+            0,
+            valid.nonzero(as_tuple=False).squeeze(1),
+            outputs.last_hidden_state[:, 0, :],
+        )
+        cls = cls_flat.view(batch_size, sentence_count, self.hidden_dim)
         cls = self.dropout(cls + self.sentence_pos_embedding(sentence_position_ids))
         padding_mask = sentence_mask == 0
         contextualized = self.sentence_interact_transformer(
@@ -321,6 +337,23 @@ class SimplifiedDARTModel(nn.Module):
             key_padding_mask=padding_mask,
         )
         return self.classifier(self.dropout(aggregated.squeeze(1)))
+
+
+class XLMRTruncatedClassifier(nn.Module):
+    """Architecture used by the paper's unmasked XLM-R truncated baseline."""
+
+    def __init__(self, base_config: Any, base_model: nn.Module | None = None) -> None:
+        super().__init__()
+        self.xlmr = base_model or AutoModel.from_config(base_config)
+        self.dropout = nn.Dropout(base_config.hidden_dropout_prob)
+        self.classifier = nn.Linear(base_config.hidden_size, 3)
+
+    def forward(
+        self, input_ids: torch.Tensor, attention_mask: torch.Tensor, **_: Any
+    ) -> torch.Tensor:
+        outputs = self.xlmr(input_ids=input_ids, attention_mask=attention_mask)
+        pooled = self.dropout(outputs.last_hidden_state[:, 0, :])
+        return self.classifier(pooled)
 
 
 def _load_spacy(language: str):
@@ -417,6 +450,8 @@ class InferenceEngine:
         elif self.backend == "bge":
             self._load_bge(state)
             return
+        elif self.model_name == "xlmr" and self.mode == "unmasked":
+            model = XLMRTruncatedClassifier(config)
         elif self.model_name == "longformer":
             config_dict = config.to_dict()
             config_dict.update(
@@ -507,7 +542,12 @@ class InferenceEngine:
         max_length = self.spec["max_length"]
         rows = []
         for item in prepared:
-            article = ASPECT_PATTERN.sub(HAN_ASPECT_TOKEN, item["article"])
+            if self.mode == "masked":
+                article = ASPECT_PATTERN.sub(HAN_ASPECT_TOKEN, item["article"])
+            else:
+                article = item["article"].replace("<aspect>", "").replace(
+                    "</aspect>", ""
+                )
             sentences = _sentences(article, self.spacy_nlp)[:max_sentences]
             ids, masks, positions = [], [], []
             for index, sentence in enumerate(sentences):
@@ -616,7 +656,9 @@ class InferenceEngine:
         with torch.inference_mode():
             for _ in range(count):
                 if self.backend == "encoder":
-                    probs = torch.softmax(self.model(**inputs).logits, dim=-1)
+                    output = self.model(**inputs)
+                    logits = output if torch.is_tensor(output) else output.logits
+                    probs = torch.softmax(logits, dim=-1)
                 elif self.backend == "han":
                     logits = self.model(
                         **inputs,

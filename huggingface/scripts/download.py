@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 from huggingface_hub import snapshot_download
@@ -24,16 +25,29 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def has_published_slots(model_name: str, models_root: Path) -> bool:
+    """Use tracked release metadata so a fresh clone can download retrained heads."""
+
+    path = models_root / model_name / "availability.json"
+    if path.is_file():
+        try:
+            entries = json.loads(path.read_text(encoding="utf-8"))["entries"]
+            return any(bool(entry.get("available")) for entry in entries)
+        except (KeyError, OSError, TypeError, ValueError):
+            pass
+    return any(
+        CHECKPOINTS[(model_name, language, mode)]["available"]
+        for language in LANGUAGES
+        for mode in MODES
+    )
+
+
 def main() -> None:
     args = parse_args()
     downloadable = [
         model_name
         for model_name in MODEL_SPECS
-        if any(
-            CHECKPOINTS[(model_name, language, mode)]["available"]
-            for language in LANGUAGES
-            for mode in MODES
-        )
+        if has_published_slots(model_name, SCRIPT_DIR.parent / "models")
     ]
     selected = args.model or downloadable
     args.output_root.mkdir(parents=True, exist_ok=True)

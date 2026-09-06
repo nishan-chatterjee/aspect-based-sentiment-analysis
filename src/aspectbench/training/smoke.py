@@ -32,7 +32,10 @@ def _loss_for_batch(engine: Any, records: Sequence[dict[str, Any]]):
         device=engine.device,
     )
     if engine.backend == "encoder":
-        return engine.model(**engine._encoder_inputs(prepared), labels=labels).loss
+        output = engine.model(**engine._encoder_inputs(prepared), labels=labels)
+        if torch.is_tensor(output):
+            return functional.cross_entropy(output, labels)
+        return output.loss
     if engine.backend == "han":
         logits = engine.model(
             **engine._han_inputs(prepared),

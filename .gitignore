@@ -24,7 +24,8 @@ data/sl/*
 # User-trained checkpoints and run artifacts.
 models/*
 !models/README.md
-huggingface/models/bge-m3-mlp/training/
+huggingface/models/*/training/
+huggingface/models/_recovery/
 runs/
 *.pt
 *.pth
