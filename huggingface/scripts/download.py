@@ -4,12 +4,11 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
 from huggingface_hub import snapshot_download
 
-from model_registry import CHECKPOINTS, LANGUAGES, MODES, MODEL_SPECS
+from model_registry import MODEL_SPECS
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -25,30 +24,12 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def has_published_slots(model_name: str, models_root: Path) -> bool:
-    """Use tracked release metadata so a fresh clone can download retrained heads."""
-
-    path = models_root / model_name / "availability.json"
-    if path.is_file():
-        try:
-            entries = json.loads(path.read_text(encoding="utf-8"))["entries"]
-            return any(bool(entry.get("available")) for entry in entries)
-        except (KeyError, OSError, TypeError, ValueError):
-            pass
-    return any(
-        CHECKPOINTS[(model_name, language, mode)]["available"]
-        for language in LANGUAGES
-        for mode in MODES
-    )
-
-
 def main() -> None:
     args = parse_args()
-    downloadable = [
-        model_name
-        for model_name in MODEL_SPECS
-        if has_published_slots(model_name, SCRIPT_DIR.parent / "models")
-    ]
+    # Every registered family has a private model repository. Some repositories
+    # intentionally contain a partial language/mode matrix, but selecting the
+    # family must still download its available checkpoints and metadata.
+    downloadable = list(MODEL_SPECS)
     selected = args.model or downloadable
     args.output_root.mkdir(parents=True, exist_ok=True)
     for model_name in selected:
