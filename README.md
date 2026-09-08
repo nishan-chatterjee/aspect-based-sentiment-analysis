@@ -486,6 +486,67 @@ enabled. Restricted Slovenian evaluation requires
 `outputs/privacy-audit/` tree without article text, aspect names, or per-record
 probabilities.
 
+For a stronger release audit, use
+`notebooks/model-privacy-extraction-and-distribution-audit.ipynb` together with
+the resumable `scripts/6.1-run-privacy-audit-four-gpu.sh` launcher. The expanded
+audit separates model signal from exact/near-duplicate records and text
+distribution shift, measures aspect-name support and aspect-only label priors,
+runs validation- and test-based membership attacks, and compares member versus
+nonmember behavior under pseudonym and aspect-permutation counterfactuals.
+
+On an authorized four-A40 allocation:
+
+```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
+conda activate absa
+cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis
+
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 \
+RUN_ID=privacy-release-audit \
+MODELS=all \
+MC_PASSES=8 \
+ALLOW_RESTRICTED_SLOVENE=1 \
+bash scripts/6.1-run-privacy-audit-four-gpu.sh
+```
+
+The four workers are `hbs/masked`, `hbs/unmasked`, `sl/masked`, and
+`sl/unmasked`. Each worker processes its available models sequentially on one
+GPU. Reports, `_SUCCESS.json` resume markers, progress files, and `_logs` live
+under `outputs/privacy-audit/<RUN_ID>/`; this entire tree is ignored because it
+contains internal analysis, although the implemented reports are aggregate
+only. Re-run the identical command and `RUN_ID` after preemption. Monitor with:
+
+```bash
+watch -n 10 'find outputs/privacy-audit/privacy-release-audit -name progress.json -o -name "_SUCCESS.json" | sort'
+tail -f outputs/privacy-audit/privacy-release-audit/_logs/*.log
+```
+
+After the GPU workers finish, preserve notebook outputs as both an executed
+notebook and HTML report:
+
+```bash
+RUN_ID=privacy-release-audit \
+bash scripts/6.3-render-privacy-audit-notebook.sh
+```
+
+To execute and preserve the earlier, narrower notebook instead:
+
+```bash
+RUN_ID=privacy-release-audit-basic \
+SOURCE_NOTEBOOK=notebooks/model-privacy-and-memorization-audit.ipynb \
+RUN_MODEL_ATTACKS=1 \
+RUN_COUNTERFACTUALS=1 \
+CUDA_VISIBLE_DEVICES=0 \
+bash scripts/6.3-render-privacy-audit-notebook.sh
+```
+
+No extra package is normally required beyond `absa.yml`; the audit uses
+PyTorch, Transformers, NumPy, pandas, scikit-learn, and Jupyter. A passed audit
+supports the bounded statement that no material leakage was detected by the
+documented attacks. It is not differential privacy and cannot prove that every
+possible extraction or inversion attack will fail.
+
 ## Repository layout and `backup/`
 
 The clean API lives in `src/`, numbered launchers in `scripts/`, configuration
