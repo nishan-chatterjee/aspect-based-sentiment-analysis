@@ -71,8 +71,9 @@ names in examples are illustrative, not the complete list.
 Every family has its own adapter under `src/aspectbench/models/`; numbered
 files under `scripts/` only aggregate them. A requested missing checkpoint
 fails clearly. With `--models all`, unavailable combinations are logged and
-skipped so the remaining grid can finish. In particular, the selected
-BGE-M3-MLP heads are not yet present in the Hugging Face release.
+skipped so the remaining grid can finish. The current private Hugging Face
+release contains all 28 family/language/mode slots and the complete matrix has
+passed load, single/batch inference, and MC-dropout smoke validation.
 
 ## Installation and environments
 
@@ -251,9 +252,11 @@ needed.
 
 ### Pathway B: fine-tune, then infer
 
-Full training validates every epoch, saves the best Macro-F1 checkpoint and
-resumable optimizer state, activates the best checkpoint, then automatically
-creates MC-dropout uncertainty files for validation and every named split:
+One full-training invocation consumes exactly one supplied train/validation
+distribution. It validates every epoch, saves the best Macro-F1 checkpoint and
+resumable optimizer state, activates that checkpoint, then automatically
+creates resumable MC-dropout uncertainty shards for validation and every named
+split:
 
 ```bash
 source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
@@ -271,6 +274,14 @@ strict save/reload check. Runs are resumable by default; atomic shards,
 manifests, progress JSON, and `_logs/` live under `models/_runs/`. See the
 [interactive runbook](docs/interactive-smoke-tests.md) for `--input-doc`,
 monitoring, and cleanup examples.
+
+To train split 0 only, all three existing distributions, or three new
+stratified distributions from one labeled input (seeds 1729/6174/8191), use
+`scripts/3.8-train-split-grid-four-gpu.sh`. The full custom-loader contract,
+per-split directory layout, best-split selection, and one-model examples are in
+`docs/training-and-dspy-pathways.md`. The generic path initializes from
+`--model-root`—the released fine-tuned checkpoint by default—so it is continued
+fine-tuning/dataset transfer, not an implicit from-base paper reproduction.
 
 After full training, `models/_active/` exposes the latest best checkpoints in
 the same layout as `huggingface/models`. Pass `--model-root models/_active` to
@@ -338,11 +349,11 @@ remains a dry run unless `--execute` is explicitly supplied.
 
 ### Recover the remaining XLM-R and HAN-XLM-R heads
 
-After the BGE recovery, the only four unavailable release slots are the
-unmasked XLM-R and HAN-XLM-R heads for HBS and Slovenian. This launcher assigns
-one slot to each of four 48 GB A40/A6000 GPUs. Every process trains fixed splits
-0, 1, and 2, selects by validation Macro-F1, evaluates all split heads on test,
-and promotes one tensor-only checkpoint to the matching Hugging Face path.
+The four formerly unavailable unmasked XLM-R and HAN-XLM-R heads for HBS and
+Slovenian were recovered with this launcher. It assigns one slot to each of
+four 48 GB A40/A6000 GPUs. Every process trains fixed splits 0, 1, and 2,
+selects by validation Macro-F1, evaluates all split heads on test, and promotes
+one tensor-only checkpoint to the matching Hugging Face path.
 
 ```bash
 source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
