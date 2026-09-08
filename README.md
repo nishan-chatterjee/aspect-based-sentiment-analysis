@@ -547,6 +547,44 @@ supports the bounded statement that no material leakage was detected by the
 documented attacks. It is not differential privacy and cannot prove that every
 possible extraction or inversion attack will fail.
 
+The membership report also records true-positive rates at empirical 5%, 1%,
+and 0.1% false-positive operating points. A cohort of 384 cannot resolve 0.1%
+FPR, and the report says so rather than returning a misleading number. Treat
+the default run as a screen; for a low-FPR follow-up on selected models, use at
+least 2,000–5,000 records per cohort and preferably independently trained
+shadow/reference models.
+
+### Four-GPU Hugging Face release smoke test
+
+The release smoke test downloads the private Hugging Face repositories into an
+ignored validation run, records the resolved remote revisions, then tests every
+model family against both `huggingface/examples/hbs-tagged-examples.json` and
+`huggingface/examples/sl-tagged-synthetic-examples.json`. Every available
+language/mode slot must pass model loading, one-record inference, batched
+inference, probability validation, and MC-dropout uncertainty validation.
+
+```bash
+source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
+conda activate absa
+cd /Utilisateurs/nchatt01/GitHub/aspect-based-sentiment-analysis
+
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 \
+RUN_ID=hf-release-smoke \
+MODELS=all \
+MC_PASSES=8 \
+DOWNLOAD_FROM_HF=1 \
+bash scripts/1.3-hf-release-smoke-four-gpu.sh
+```
+
+The Hugging Face `slavic-specific` family covers BERTić for HBS and SloBERTa
+for Slovenian. With the current seven repository families, the complete matrix
+contains 28 slots: seven families × two languages × two modes. A run is
+resumable under the same `RUN_ID`; a family is skipped only when its saved
+report has at least one passing slot, no failures, and no unavailable slots.
+Reports, logs, remote revision provenance, and any downloaded copies are kept
+under `huggingface/validation-runs/<RUN_ID>/` and ignored by Git.
+
 ## Repository layout and `backup/`
 
 The clean API lives in `src/`, numbered launchers in `scripts/`, configuration

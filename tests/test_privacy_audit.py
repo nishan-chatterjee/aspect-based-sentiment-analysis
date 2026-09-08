@@ -13,6 +13,21 @@ def test_membership_attack_detects_separated_scores():
 
     assert report["auc"] == 1.0
     assert report["maximum_tpr_minus_fpr"] == 1.0
+    assert report["low_fpr_operating_points"]["1%"]["available"] is False
+
+
+def test_membership_attack_reports_low_fpr_resolution():
+    report = membership_attack_report(
+        [0.9] * 100 + [0.1] * 100,
+        list(torch.linspace(0.0, 0.5, 1000).numpy()),
+        bootstrap_samples=10,
+        permutation_samples=10,
+    )
+    at_one_percent = report["low_fpr_operating_points"]["1%"]
+    assert at_one_percent["available"] is True
+    assert at_one_percent["empirical_fpr"] <= 0.011
+    assert at_one_percent["tpr"] >= 0.49
+    assert report["low_fpr_operating_points"]["0.1%"]["available"] is True
 
 
 def test_checkpoint_inventory_rejects_non_tensor_metadata(tmp_path):

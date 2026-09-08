@@ -52,11 +52,29 @@ def validate_prediction(row: dict[str, Any], expected: dict[str, str]) -> None:
         raise AssertionError("Probability labels are incorrect.")
     if not math.isclose(sum(probabilities.values()), 1.0, rel_tol=0, abs_tol=1e-5):
         raise AssertionError("Class probabilities do not sum to 1.")
+    if not all(math.isfinite(float(value)) and 0.0 <= float(value) <= 1.0 for value in probabilities.values()):
+        raise AssertionError("Class probabilities are non-finite or outside [0, 1].")
     uncertainty = row["uncertainty_across_classes"]
     if not 0.0 <= uncertainty["confidence"] <= 1.0:
         raise AssertionError("Confidence is outside [0, 1].")
     if expected["mode"] == "masked" and row["aspect_used"] != "[ASPECT]":
         raise AssertionError("Masked inference exposed the aspect text to the model.")
+
+
+def validate_mc_uncertainty(row: dict[str, Any], passes: int) -> None:
+    if not passes:
+        return
+    mc = row["uncertainty_across_classes"].get("mc_dropout")
+    if not isinstance(mc, dict) or mc.get("passes") != passes:
+        raise AssertionError("MC-dropout metadata is missing or has the wrong pass count.")
+    for key in ("mutual_information_bits", "prediction_agreement", "variation_ratio"):
+        value = float(mc[key])
+        if not math.isfinite(value):
+            raise AssertionError(f"MC-dropout {key} is non-finite.")
+    if not 0.0 <= float(mc["prediction_agreement"]) <= 1.0:
+        raise AssertionError("MC-dropout agreement is outside [0, 1].")
+    if not 0.0 <= float(mc["variation_ratio"]) <= 1.0:
+        raise AssertionError("MC-dropout variation ratio is outside [0, 1].")
 
 
 def main() -> None:
@@ -121,6 +139,7 @@ def main() -> None:
                         seed=args.seed,
                     )
                     validate_prediction(single, expected)
+                    validate_mc_uncertainty(single, args.mc_passes)
                     stage = "batched inference"
                     batch_input = examples[language][: args.batch_size]
                     batch = engine.predict_batch(
@@ -133,6 +152,7 @@ def main() -> None:
                         raise AssertionError("Batch output length does not match input length.")
                     for row in batch:
                         validate_prediction(row, expected)
+                        validate_mc_uncertainty(row, args.mc_passes)
                     result.update(
                         status="passed",
                         single_status="completed",

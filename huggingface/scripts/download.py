@@ -4,9 +4,11 @@
 from __future__ import annotations
 
 import argparse
+from datetime import datetime, timezone
+import json
 from pathlib import Path
 
-from huggingface_hub import snapshot_download
+from huggingface_hub import HfApi, snapshot_download
 
 from model_registry import MODEL_SPECS
 
@@ -21,6 +23,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--revision", default="main")
     parser.add_argument("--token", help="Normally omitted; the saved HF token is used.")
     parser.add_argument("--force-download", action="store_true")
+    parser.add_argument("--manifest", type=Path, help="Optional resolved-revision download record.")
     return parser.parse_args()
 
 
@@ -32,6 +35,13 @@ def main() -> None:
     downloadable = list(MODEL_SPECS)
     selected = args.model or downloadable
     args.output_root.mkdir(parents=True, exist_ok=True)
+    manifest = {
+        "schema_version": 1,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "requested_revision": args.revision,
+        "models": [],
+    }
+    api = HfApi(token=args.token)
     for model_name in selected:
         if model_name not in downloadable:
             raise SystemExit(
@@ -49,6 +59,20 @@ def main() -> None:
             local_dir=destination,
             force_download=args.force_download,
         )
+        info = api.model_info(spec["hf_repo"], revision=args.revision, token=args.token)
+        manifest["models"].append(
+            {
+                "model": model_name,
+                "repo_id": spec["hf_repo"],
+                "resolved_revision": info.sha,
+                "private": bool(info.private),
+                "destination": str(destination.resolve()),
+            }
+        )
+    if args.manifest:
+        args.manifest.parent.mkdir(parents=True, exist_ok=True)
+        args.manifest.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        print(f"Download manifest: {args.manifest}", flush=True)
 
 
 if __name__ == "__main__":

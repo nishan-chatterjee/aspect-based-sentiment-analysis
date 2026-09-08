@@ -11,6 +11,69 @@ import numpy as np
 from sklearn.metrics import roc_auc_score, roc_curve
 
 
+def _wilson_interval(successes: int, trials: int, z: float = 1.959963984540054) -> list[float]:
+    if trials <= 0:
+        return [float("nan"), float("nan")]
+    proportion = successes / trials
+    denominator = 1.0 + (z * z / trials)
+    center = (proportion + z * z / (2.0 * trials)) / denominator
+    radius = (
+        z
+        * np.sqrt(proportion * (1.0 - proportion) / trials + z * z / (4.0 * trials * trials))
+        / denominator
+    )
+    return [float(max(0.0, center - radius)), float(min(1.0, center + radius))]
+
+
+def _low_fpr_operating_points(
+    members: np.ndarray,
+    nonmembers: np.ndarray,
+    targets: Sequence[float] = (0.001, 0.01, 0.05),
+) -> dict[str, Any]:
+    """Report empirical TPR at low FPR without pretending sub-resolution precision."""
+
+    ordered = np.sort(nonmembers)[::-1]
+    output: dict[str, Any] = {}
+    for target in targets:
+        allowed_false_positives = int(np.floor(target * len(nonmembers)))
+        key = f"{100 * target:g}%"
+        if allowed_false_positives < 1:
+            output[key] = {
+                "available": False,
+                "target_fpr": target,
+                "nonmember_n": len(nonmembers),
+                "empirical_fpr_resolution": 1.0 / len(nonmembers),
+                "reason": "The nonmember cohort is too small to resolve this false-positive rate.",
+            }
+            continue
+        boundary_index = min(allowed_false_positives, len(ordered) - 1)
+        high = ordered[allowed_false_positives - 1]
+        low = ordered[boundary_index]
+        threshold = float((high + low) / 2.0) if high != low else float(high)
+        member_positive = members >= threshold
+        nonmember_positive = nonmembers >= threshold
+        true_positives = int(member_positive.sum())
+        false_positives = int(nonmember_positive.sum())
+        output[key] = {
+            "available": True,
+            "target_fpr": target,
+            "threshold": threshold,
+            "member_n": len(members),
+            "nonmember_n": len(nonmembers),
+            "true_positives": true_positives,
+            "false_positives": false_positives,
+            "tpr": float(true_positives / len(members)),
+            "tpr_wilson_95_ci": _wilson_interval(true_positives, len(members)),
+            "empirical_fpr": float(false_positives / len(nonmembers)),
+            "empirical_fpr_resolution": 1.0 / len(nonmembers),
+            "calibration_warning": (
+                "Threshold and rate use the same finite nonmember cohort; confirm promising "
+                "results with larger held-out controls or shadow/reference models."
+            ),
+        }
+    return output
+
+
 def _sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as handle:
@@ -110,6 +173,7 @@ def membership_attack_report(
         / (permutation_samples + 1),
         "maximum_tpr_minus_fpr": float(advantages[best]),
         "threshold_at_maximum_advantage": float(thresholds[best]),
+        "low_fpr_operating_points": _low_fpr_operating_points(members, nonmembers),
         "member_mean": float(members.mean()),
         "nonmember_mean": float(nonmembers.mean()),
         "interpretation": (

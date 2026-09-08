@@ -13,6 +13,9 @@ MC_PASSES="${ABSA_MC_PASSES:-2}"
 BATCH_SIZE="${ABSA_BATCH_SIZE:-10}"
 DEVICE="${ABSA_DEVICE:-cuda}"
 MODEL_CSV="${ABSA_MODELS:-mt5,longformer,mdeberta-v3,han-xlmr,xlmr,slavic-specific,bge-m3-mlp}"
+DOWNLOAD_FROM_HF="${ABSA_DOWNLOAD_FROM_HF:-0}"
+REQUIRE_COMPLETE_MATRIX="${ABSA_REQUIRE_COMPLETE_MATRIX:-1}"
+BASE_MODEL_ROOT="${ABSA_BASE_MODEL_ROOT:-}"
 
 if ! [[ "$N_GPUS" =~ ^[1-9][0-9]*$ ]]; then
   echo "ERROR: N_GPUS must be a positive integer (normally 1, 2, or 4)." >&2
@@ -33,6 +36,10 @@ if ! python_has_torch "$PYTHON_BIN"; then
   exit 2
 fi
 
+if [[ "$MODEL_CSV" == "all" ]]; then
+  MODEL_CSV="mt5,longformer,mdeberta-v3,han-xlmr,xlmr,slavic-specific,bge-m3-mlp"
+fi
+MODEL_CSV="${MODEL_CSV// /,}"
 IFS=',' read -r -a MODELS <<< "$MODEL_CSV"
 if [[ "${#MODELS[@]}" -eq 0 ]]; then
   echo "ERROR: ABSA_MODELS selected no model families." >&2
@@ -72,11 +79,29 @@ if [[ "$DEVICE" == cuda* ]]; then
   fi
 fi
 
-run_id="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+run_id="${ABSA_VALIDATION_RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$$}"
 run_root="${HF_ROOT}/validation-runs/${run_id}"
 report_root="${run_root}/reports"
 log_root="${run_root}/logs"
 mkdir -p "$report_root" "$log_root"
+
+model_root="${ABSA_MODEL_ROOT:-${HF_ROOT}/models}"
+if [[ "$DOWNLOAD_FROM_HF" == "1" ]]; then
+  model_root="${run_root}/downloaded-models"
+  echo "Downloading/resuming the private Hugging Face repositories into ${model_root}"
+  download_args=()
+  for model in "${MODELS[@]}"; do download_args+=(--model "$model"); done
+  "$PYTHON_BIN" "${HF_ROOT}/scripts/download.py" \
+    --output-root "$model_root" \
+    --manifest "${run_root}/download-manifest.json" \
+    "${download_args[@]}"
+fi
+
+report_complete() {
+  [[ -s "$1" ]] && "$PYTHON_BIN" -c \
+    'import json,sys; p=json.load(open(sys.argv[1])); strict=sys.argv[2] == "1"; ok=p.get("failed", 1) == 0 and p.get("passed", 0) > 0 and (not strict or p.get("unavailable", 1) == 0); raise SystemExit(0 if ok else 1)' \
+    "$1" "$REQUIRE_COMPLETE_MATRIX" >/dev/null 2>&1
+}
 
 echo "Interactive AspectBench validation"
 echo "Python: ${PYTHON_BIN}"
@@ -85,6 +110,8 @@ echo "Models: ${MODELS[*]}"
 echo "MC passes: ${MC_PASSES}"
 echo "Batch size: ${BATCH_SIZE}"
 echo "Run directory: ${run_root}"
+echo "Model root: ${model_root}"
+echo "Download from Hugging Face: ${DOWNLOAD_FROM_HF}"
 "$PYTHON_BIN" -c 'import sys, torch; print(f"Executable: {sys.executable}"); print(f"PyTorch: {torch.__version__}"); print(f"CUDA available: {torch.cuda.is_available()}"); print(f"CUDA devices visible before worker isolation: {torch.cuda.device_count()}")'
 
 worker_pids=()
@@ -96,15 +123,25 @@ for ((worker=0; worker<N_GPUS; worker++)); do
       model="${MODELS[$task]}"
       report="${report_root}/${model}.json"
       log="${log_root}/${model}.log"
+      if report_complete "$report"; then
+        echo "[GPU ${gpu_id}] RESUME-SKIP ${model}: passing report already exists"
+        continue
+      fi
       echo "[GPU ${gpu_id}] START ${model}"
+      completeness_flags=()
+      [[ "$REQUIRE_COMPLETE_MATRIX" == "1" ]] && completeness_flags+=(--require-complete-matrix)
+      base_flags=()
+      [[ -n "$BASE_MODEL_ROOT" ]] && base_flags+=(--base-model-root "$BASE_MODEL_ROOT")
       set +e
       CUDA_VISIBLE_DEVICES="$gpu_id" "$PYTHON_BIN" "${HF_ROOT}/scripts/validate_all.py" \
         --model "$model" \
-        --model-root "${HF_ROOT}/models" \
+        --model-root "${model_root}" \
         --examples-root "${HF_ROOT}/examples" \
+        "${base_flags[@]}" \
         --device "$DEVICE" \
         --batch-size "$BATCH_SIZE" \
         --mc-passes "$MC_PASSES" \
+        "${completeness_flags[@]}" \
         --output "$report" 2>&1 | sed "s/^/[GPU ${gpu_id} ${model}] /" | tee "$log"
       command_status=${PIPESTATUS[0]}
       set -e
@@ -133,7 +170,8 @@ set +e
 merge_status=$?
 set -e
 
-echo "Per-family reports and logs: ${run_root}"
+cp "${HF_ROOT}/validation-report.json" "${run_root}/validation-report.json"
+echo "Per-family reports, logs, and merged report: ${run_root}"
 if [[ "$worker_failures" -ne 0 || "$merge_status" -ne 0 ]]; then
   echo "INTERACTIVE VALIDATION FAILED" >&2
   exit 1

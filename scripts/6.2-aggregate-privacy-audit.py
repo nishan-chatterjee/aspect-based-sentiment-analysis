@@ -47,6 +47,9 @@ def main() -> None:
             for feature, result in univariate.items():
                 if best_auc is None or result["auc"] > best_auc:
                     best_feature, best_auc = feature, result["auc"]
+            best_result = univariate.get(best_feature, {}) if best_feature else {}
+            one_percent = best_result.get("low_fpr_operating_points", {}).get("1%", {})
+            point_one_percent = best_result.get("low_fpr_operating_points", {}).get("0.1%", {})
             rows.append(
                 {
                     "dataset": report["dataset"],
@@ -56,6 +59,10 @@ def main() -> None:
                     "nonmember_cohort": cohort,
                     "strongest_univariate_feature": best_feature,
                     "strongest_univariate_auc": best_auc,
+                    "strongest_attack_tpr_at_1pct_fpr": one_percent.get("tpr"),
+                    "strongest_attack_empirical_fpr_at_1pct": one_percent.get("empirical_fpr"),
+                    "strongest_attack_tpr_at_0_1pct_fpr": point_one_percent.get("tpr"),
+                    "low_fpr_resolution": one_percent.get("empirical_fpr_resolution") or point_one_percent.get("empirical_fpr_resolution"),
                     "combined_attack_auc_mean": attack.get("combined_attack", {}).get("held_out_auc", {}).get("mean"),
                     "covariate_matched_attack_auc_mean": attack.get("covariate_matched_attack", {}).get("combined_attack", {}).get("held_out_auc", {}).get("mean"),
                     "member_accuracy": attack.get("member_accuracy"),
