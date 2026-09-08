@@ -19,12 +19,16 @@
       "model": "xlmr",
       "language": "hbs",
       "mode": "unmasked",
-      "validation_macro_f1": 0.9261041473729551,
-      "available": false,
-      "unavailable_reason": "Validation metrics identify the best unmasked run, but its trained checkpoint file is absent from the source tree. Retraining or archive recovery is required.",
+      "validation_macro_f1": 0.928920644650292,
+      "available": true,
+      "unavailable_reason": null,
       "base_model": "FacebookAI/xlm-roberta-base",
       "weight_path": "xlmr/hbs/unmasked.pt",
-      "status": "unavailable"
+      "status": "available_retrained",
+      "selected_split": 0,
+      "sha256": "a6a1e25a048de9c4356e767d705cd8639406348772b8700b30f82ff0d274f0ba",
+      "test_macro_f1_mean": 0.8013558281184165,
+      "test_qwk_mean": 0.7806921364685017
     },
     {
       "model": "xlmr",
@@ -44,12 +48,16 @@
       "model": "xlmr",
       "language": "slovenian",
       "mode": "unmasked",
-      "validation_macro_f1": 0.8286127750538895,
-      "available": false,
-      "unavailable_reason": "Validation metrics identify the best unmasked run, but its trained checkpoint file is absent from the source tree. Retraining or archive recovery is required.",
+      "validation_macro_f1": 0.8336183434009522,
+      "available": true,
+      "unavailable_reason": null,
       "base_model": "FacebookAI/xlm-roberta-base",
       "weight_path": "xlmr/slovenian/unmasked.pt",
-      "status": "unavailable"
+      "status": "available_retrained",
+      "selected_split": 2,
+      "sha256": "12520d395e8e8594da5ed5196de5545b2f8ac824f820f125cec6dd4d0151205b",
+      "test_macro_f1_mean": 0.6818098263701194,
+      "test_qwk_mean": 0.6410741312845625
     }
   ]
 }

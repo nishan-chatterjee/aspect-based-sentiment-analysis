@@ -474,6 +474,18 @@ example is in `notebooks/evaluation-and-aspect-reporting.ipynb`. See
 `docs/extending-models-and-data.md` for the kebab-case model registration and
 new-dataset contracts.
 
+### Model privacy and memorization screen
+
+`notebooks/model-privacy-and-memorization-audit.ipynb` provides an
+aggregate-only release audit for accidental checkpoint payloads, black-box
+membership inference, and target-identity counterfactual sensitivity. It does
+not claim differential privacy or prove that extraction is impossible. The
+default configuration is HBS and does not run model queries until explicitly
+enabled. Restricted Slovenian evaluation requires
+`ALLOW_RESTRICTED_SLOVENE=1`, and all reports are written under the ignored
+`outputs/privacy-audit/` tree without article text, aspect names, or per-record
+probabilities.
+
 ## Repository layout and `backup/`
 
 The clean API lives in `src/`, numbered launchers in `scripts/`, configuration

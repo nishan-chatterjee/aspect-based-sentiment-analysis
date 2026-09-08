@@ -10,9 +10,25 @@ license: other
 # AspectBench XLM-R
 
 Model-only checkpoints for HBS and Slovenian document-level aspect-based
-sentiment analysis. This repository contains 2/4 language-mode
+sentiment analysis. This repository contains 4/4 language-mode
 checkpoint slots. It is used with the shared inference toolkit in
 [`nishan-chatterjee/aspect-based-sentiment-analysis`](https://huggingface.co/nishan-chatterjee/aspect-based-sentiment-analysis).
+
+## What this repository contains
+
+Each `.pt` file is a tensor-only state dictionary for a complete fine-tuned
+XLM-R encoder and its three-class classifier—not merely a small classification
+head. The language directories also include the configuration and tokenizer
+assets needed by the shared toolkit. Training data, optimizer state, cached
+features, logs, and row-level predictions are excluded.
+
+The masked checkpoints use the standard XLM-R sequence-classification head.
+The unmasked checkpoints reproduce the paper's truncated-document classifier
+(XLM-R `[CLS]` representation → dropout → linear classifier). Because the
+architecture is selected by mode, this is intentionally not a generic
+Transformers `save_pretrained()` directory: use `InferenceEngine` or the
+`aspectbench` CLI below instead of calling `AutoModel.from_pretrained()` on
+this repository directly.
 
 ## Input format
 
@@ -34,12 +50,21 @@ Tokom šestonedeljnog testiranja, redakcija je više puta kontaktirala <aspect>P
 | Language | Mode | Status | Best validation Macro-F1 |
 |---|---|---|---:|
 | hbs | masked | Available | 0.9247 |
-| hbs | unmasked | Checkpoint file unavailable | 0.9261 |
+| hbs | unmasked | Available (retrained) | 0.9289 |
 | slovenian | masked | Available | 0.8358 |
-| slovenian | unmasked | Checkpoint file unavailable | 0.8286 |
+| slovenian | unmasked | Available (retrained) | 0.8336 |
 
 `availability.json` contains the machine-readable selection record. A missing
 checkpoint is never replaced with a checkpoint from another mode or language.
+
+## Recovery provenance
+
+The missing unmasked heads were retrained over all three fixed splits and selected only by validation Macro-F1. Optimizer state, logs, and row-level outputs are excluded from this model repository.
+
+| Language | Selected split | Validation Macro-F1 | Mean test Macro-F1 | Mean test QWK |
+|---|---:|---:|---:|---:|
+| hbs | 0 | 0.9289 | 0.8014 | 0.7807 |
+| slovenian | 2 | 0.8336 | 0.6818 | 0.6411 |
 
 ## Getting started
 
@@ -80,6 +105,16 @@ snapshot_download(
 
 The model repository includes the tokenizer and configuration assets required
 to reconstruct the architecture. No separate base-model cache is needed.
+
+For a GitHub checkout, the equivalent one-command download and inference path
+is:
+
+```bash
+python huggingface/scripts/download.py --model xlmr
+CUDA_VISIBLE_DEVICES=0 aspectbench infer --models xlmr --dataset hbs \
+  --variant unmasked --input-doc 'Poziv za <aspect>Primer Grupu</aspect> je uspeo.' \
+  --mc-passes 8
+```
 
 ## Python / Jupyter prediction
 
