@@ -19,7 +19,12 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
-from aspectbench.inference.hf_bridge import checkpoint_status, create_engine  # noqa: E402
+from aspectbench.inference.hf_bridge import (  # noqa: E402
+    checkpoint_status,
+    create_engine,
+    load_release_modules,
+    release_coordinates,
+)
 from aspectbench.privacy import checkpoint_tensor_inventory  # noqa: E402
 from aspectbench.privacy.experiments import (  # noqa: E402
     aspect_distribution_report,
@@ -77,25 +82,20 @@ def load_payload(path: Path) -> dict[str, list[dict[str, Any]]]:
     return payload
 
 
-def selected_split(model_root: Path, model: str, language: str, variant: str) -> int:
-    release_language = "slovenian" if language == "sl" else "hbs"
-    availability = json.loads((model_root / model / "availability.json").read_text())
-    match = next(
-        row
-        for row in availability["entries"]
-        if row["language"] == release_language and row["mode"] == variant
-    )
-    if match.get("selected_split") is not None:
-        return int(match["selected_split"])
-    manifest = json.loads((model_root / "manifest.json").read_text())
-    fallback = next(
-        row
-        for row in manifest["entries"]
-        if row["model"] == model
-        and row["language"] == release_language
-        and row["mode"] == variant
-    )
-    return int(fallback["run"])
+def selected_split(
+    repository_root: Path, model: str, language: str, variant: str
+) -> int:
+    # The release registry is authoritative for historical checkpoints. Older
+    # availability.json entries intentionally omit provenance fields such as
+    # ``run``; BERTić and SloBERTa also share the ``slavic-specific`` HF family.
+    _, registry = load_release_modules(repository_root)
+    release_model, release_language = release_coordinates(model, language)
+    run = registry.CHECKPOINTS[(release_model, release_language, variant)].get("run")
+    if run is None:
+        raise ValueError(
+            f"No selected split is recorded for {model}/{language}/{variant}."
+        )
+    return int(run)
 
 
 def private_record_key(row: dict[str, Any]) -> tuple[str, str]:
@@ -236,7 +236,7 @@ def run_model(
     output_dir: Path,
 ) -> dict[str, Any]:
     prefix = "slovene" if args.dataset == "sl" else "hbs"
-    split = selected_split(model_root, model, args.dataset, args.variant)
+    split = selected_split(args.repository_root, model, args.dataset, args.variant)
     split_payload = load_payload(args.repository_root / "data" / args.dataset / f"{prefix}_train_val_{split}.json")
     test = load_payload(args.repository_root / "data" / args.dataset / f"{prefix}_test.json")["test"]
     train, validation = split_payload["train"], split_payload["val"]
@@ -442,7 +442,9 @@ def main() -> None:
     for spec in specs:
         model_dir = output_dir / spec.name
         success = model_dir / "_SUCCESS.json"
+        failed = model_dir / "_FAILED.json"
         if args.resume and success.is_file():
+            failed.unlink(missing_ok=True)
             print(f"[{spec.name}] already complete; skipping", flush=True)
             continue
         status = checkpoint_status(args.repository_root, model_root, spec.name, args.dataset, args.variant)
@@ -454,6 +456,7 @@ def main() -> None:
                 continue
             raise FileNotFoundError(message)
         try:
+            failed.unlink(missing_ok=True)
             print(f"[{spec.name}] starting", flush=True)
             report = run_model(args, spec.name, model_root, model_dir)
             atomic_json(model_dir / "aggregate-report.json", report)
@@ -466,10 +469,11 @@ def main() -> None:
                     "review_trigger_count": len(report["review_triggers"]),
                 },
             )
+            failed.unlink(missing_ok=True)
             print(f"[{spec.name}] complete; triggers={len(report['review_triggers'])}", flush=True)
         except Exception as error:  # keep other models resumable
             failures.append({"model": spec.name, "error_type": type(error).__name__, "message": str(error)})
-            atomic_json(model_dir / "_FAILED.json", failures[-1])
+            atomic_json(failed, failures[-1])
             print(f"[{spec.name}] FAILED: {type(error).__name__}: {error}", file=sys.stderr, flush=True)
     atomic_json(
         output_dir / "progress.json",
