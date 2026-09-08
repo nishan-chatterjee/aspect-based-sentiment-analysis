@@ -13,4 +13,5 @@ Updated: 2026-09-08
 | Public DSPy program matrix smoke | ready | `2.5` runs 18 programs and records 10 explicit unavailable skips |
 | DSPy optimization/reload smoke | ready | `4.3` writes only to ignored `optimized/` output |
 | Historical 3× checkpoint/MC archive | in progress | create checksum-backed private copies under `models/_paper-splits/`; never alter the source `absa` tree |
+| Aggregate local data manifests | ready | `0.5-build-data-statistics.py` writes counts, sizes, and SHA-256 only; raw data remains ignored |
 | Full GPU results interpretation | waiting on run | inspect aggregate privacy and DSPy summaries after the interactive jobs finish |
