@@ -59,6 +59,7 @@ def main() -> None:
                     "nonmember_cohort": cohort,
                     "strongest_univariate_feature": best_feature,
                     "strongest_univariate_auc": best_auc,
+                    "strongest_attack_permutation_p_two_sided": best_result.get("permutation_p_two_sided"),
                     "strongest_attack_tpr_at_1pct_fpr": one_percent.get("tpr"),
                     "strongest_attack_empirical_fpr_at_1pct": one_percent.get("empirical_fpr"),
                     "strongest_attack_tpr_at_0_1pct_fpr": point_one_percent.get("tpr"),
@@ -80,7 +81,7 @@ def main() -> None:
                 }
             )
     summary = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "run_dir": str(run_dir),
         "aggregate_only": True,

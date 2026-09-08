@@ -490,9 +490,12 @@ For a stronger release audit, use
 `notebooks/model-privacy-extraction-and-distribution-audit.ipynb` together with
 the resumable `scripts/6.1-run-privacy-audit-four-gpu.sh` launcher. The expanded
 audit separates model signal from exact/near-duplicate records and text
-distribution shift, measures aspect-name support and aspect-only label priors,
-runs validation- and test-based membership attacks, and compares member versus
-nonmember behavior under pseudonym and aspect-permutation counterfactuals.
+distribution shift, scans every Git-tracked text artifact for exact records,
+aspect identifiers, and 24-token corpus shingles, measures aspect-name support
+and aspect-only label priors, runs validation- and test-based membership
+attacks, and compares member versus nonmember behavior under pseudonym and
+aspect-permutation counterfactuals. The release-surface scan emits file paths
+and aggregate counts only; it never writes the matching corpus material.
 
 On an authorized four-A40 allocation:
 
@@ -522,6 +525,28 @@ watch -n 10 'find outputs/privacy-audit/privacy-release-audit -name progress.jso
 tail -f outputs/privacy-audit/privacy-release-audit/_logs/*.log
 ```
 
+The command above is the breadth-first screen: it audits every available
+model/language/variant slot with 384 label-matched members and nonmembers per
+comparison. If a slot triggers—or if a low-FPR result is required for the
+release decision—rerun one model with larger cohorts. The sampler keeps the
+sentiment counts identical between members and nonmembers without discarding
+most negative/positive rows merely because neutral is rare:
+
+```bash
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 \
+RUN_ID=privacy-xlmr-low-fpr \
+MODELS=xlmr \
+MAX_PER_COHORT=3000 \
+MC_PASSES=8 \
+ALLOW_RESTRICTED_SLOVENE=1 \
+bash scripts/6.1-run-privacy-audit-four-gpu.sh
+```
+
+This second command still runs four independent jobs (HBS/Slovenian ×
+masked/unmasked), but only for XLM-R. Reuse it with a comma-separated subset
+such as `MODELS=xlmr,han-xlmr`; retain the same `RUN_ID` after preemption.
+
 After the GPU workers finish, preserve notebook outputs as both an executed
 notebook and HTML report:
 
@@ -547,12 +572,14 @@ supports the bounded statement that no material leakage was detected by the
 documented attacks. It is not differential privacy and cannot prove that every
 possible extraction or inversion attack will fail.
 
-The membership report also records true-positive rates at empirical 5%, 1%,
-and 0.1% false-positive operating points. A cohort of 384 cannot resolve 0.1%
-FPR, and the report says so rather than returning a misleading number. Treat
-the default run as a screen; for a low-FPR follow-up on selected models, use at
-least 2,000–5,000 records per cohort and preferably independently trained
-shadow/reference models.
+The membership report records two-sided permutation significance and
+true-positive rates at empirical 5%, 1%, and 0.1% false-positive operating
+points. A cohort of 384 cannot resolve 0.1% FPR, and the report says so rather
+than returning a misleading number. Treat the default run as a screen; for a
+low-FPR follow-up on selected models, use at least 2,000–5,000 records per
+cohort and preferably independently trained shadow/reference models. The
+text-only distribution classifier fits TF–IDF inside each held-out fold so its
+AUC does not benefit from test-fold vocabulary or IDF statistics.
 
 ### Four-GPU Hugging Face release smoke test
 

@@ -10,8 +10,11 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from collections.abc import Iterable, Mapping, Sequence
 import hashlib
+import json
 import math
+from pathlib import Path
 import re
+import subprocess
 import unicodedata
 from typing import Any
 
@@ -26,6 +29,7 @@ from .audit import membership_attack_report
 
 
 ASPECT_TAG_RE = re.compile(r"<aspect>.*?</aspect>", flags=re.IGNORECASE | re.DOTALL)
+TOKEN_RE = re.compile(r"\w+", flags=re.UNICODE)
 LABELS = (-1, 0, 1)
 CLASS_KEYS = {
     -1: "-1 (negative)",
@@ -267,30 +271,198 @@ def distribution_classifier_report(
     rows = list(members) + list(nonmembers)
     text = [normalize_private_text(row.get("article")) for row in rows]
     labels = np.concatenate([np.ones(len(members)), np.zeros(len(nonmembers))])
-    vectorizer = TfidfVectorizer(
-        analyzer="char_wb", ngram_range=(3, 5), min_df=2,
-        max_features=max_features, sublinear_tf=True, dtype=np.float32,
-    )
-    features = vectorizer.fit_transform(text)
     splitter = StratifiedShuffleSplit(n_splits=repeats, test_size=0.30, random_state=seed)
-    aucs = []
-    for train_index, test_index in splitter.split(features, labels):
+    aucs, feature_counts = [], []
+    placeholder = np.zeros((len(labels), 1), dtype=np.int8)
+    for train_index, test_index in splitter.split(placeholder, labels):
+        vectorizer = TfidfVectorizer(
+            analyzer="char_wb", ngram_range=(3, 5), min_df=2,
+            max_features=max_features, sublinear_tf=True, dtype=np.float32,
+        )
+        train_features = vectorizer.fit_transform([text[int(index)] for index in train_index])
+        test_features = vectorizer.transform([text[int(index)] for index in test_index])
         classifier = LogisticRegression(
             C=1.0, class_weight="balanced", max_iter=500, solver="liblinear",
             random_state=seed,
         )
-        classifier.fit(features[train_index], labels[train_index])
-        probability = classifier.predict_proba(features[test_index])[:, 1]
+        classifier.fit(train_features, labels[train_index])
+        probability = classifier.predict_proba(test_features)[:, 1]
         auc = float(roc_auc_score(labels[test_index], probability))
-        aucs.append(max(auc, 1.0 - auc))
+        aucs.append(auc)
+        feature_counts.append(int(train_features.shape[1]))
     return {
         "member_n": len(members),
         "nonmember_n": len(nonmembers),
-        "feature_count": int(features.shape[1]),
+        "feature_count": _quantiles(feature_counts),
+        "held_out_auc": _quantiles(aucs),
+        # Retained for report compatibility. The classifier has a predefined
+        # member label, so fold-wise AUCs are no longer reflected around 0.5.
         "absolute_direction_auc": _quantiles(aucs),
         "interpretation": (
             "High AUC indicates cohort distribution shift. It is a confounder for "
             "membership inference and is not evidence of model memorization by itself."
+        ),
+    }
+
+
+def _digest_text(value: str) -> bytes:
+    return hashlib.blake2b(value.encode("utf-8"), digest_size=16).digest()
+
+
+def _tokens(value: Any) -> list[str]:
+    return TOKEN_RE.findall(normalize_private_text(value))
+
+
+def _shingle_digests(tokens: Sequence[str], width: int) -> set[bytes]:
+    if len(tokens) < width:
+        return set()
+    return {
+        _digest_text(" ".join(tokens[index : index + width]))
+        for index in range(len(tokens) - width + 1)
+    }
+
+
+def tracked_release_paths(repository_root: str | Path) -> list[Path]:
+    """Return Git-tracked text-like release files, excluding private/runtime trees."""
+
+    root = Path(repository_root).resolve()
+    result = subprocess.run(
+        ["git", "-C", str(root), "ls-files", "-z"],
+        check=True,
+        stdout=subprocess.PIPE,
+    )
+    excluded_roots = {"data", "models", "outputs"}
+    excluded_prefixes = {("huggingface", "models"), ("huggingface", "validation-runs")}
+    suffixes = {
+        ".cff", ".csv", ".ipynb", ".jinja", ".json", ".jsonl", ".md",
+        ".py", ".sh", ".tex", ".toml", ".tsv", ".txt", ".yaml", ".yml",
+    }
+    paths = []
+    for raw in result.stdout.decode("utf-8").split("\0"):
+        if not raw:
+            continue
+        relative = Path(raw)
+        if relative.parts[0] in excluded_roots:
+            continue
+        if any(relative.parts[: len(prefix)] == prefix for prefix in excluded_prefixes):
+            continue
+        path = root / relative
+        if path.is_file() and path.suffix.lower() in suffixes:
+            paths.append(path)
+    return paths
+
+
+def release_surface_overlap_report(
+    rows: Sequence[Mapping[str, Any]],
+    *,
+    repository_root: str | Path,
+    candidate_paths: Sequence[str | Path] | None = None,
+    shingle_tokens: int = 24,
+    maximum_file_bytes: int = 64 * 1024 * 1024,
+) -> dict[str, Any]:
+    """Check publishable text files for corpus-derived material.
+
+    The report contains counts and relative file paths only. It never emits a
+    source record, aspect name, matching shingle, or digest.
+    """
+
+    if shingle_tokens < 8:
+        raise ValueError("shingle_tokens must be at least 8 to limit incidental matches.")
+    root = Path(repository_root).resolve()
+    candidates = (
+        tracked_release_paths(root) if candidate_paths is None
+        else [Path(path).resolve() for path in candidate_paths]
+    )
+    article_hashes: set[bytes] = set()
+    article_shingles: set[bytes] = set()
+    aspect_hashes_by_length: dict[int, set[bytes]] = defaultdict(set)
+    for row in rows:
+        article = normalize_private_text(row.get("article"))
+        article_hash = _digest_text(article)
+        if article and article_hash not in article_hashes:
+            article_hashes.add(article_hash)
+            article_shingles.update(_shingle_digests(_tokens(article), shingle_tokens))
+        aspect = normalize_private_text(row.get("aspect"))
+        aspect_tokens = _tokens(aspect)
+        if aspect and aspect_tokens:
+            aspect_hashes_by_length[len(aspect_tokens)].add(_digest_text(" ".join(aspect_tokens)))
+
+    matches, skipped = [], []
+    for path in candidates:
+        try:
+            relative = str(path.relative_to(root))
+        except ValueError:
+            relative = path.name
+        try:
+            size = path.stat().st_size
+            if size > maximum_file_bytes:
+                skipped.append({"path": relative, "reason": "over_size_limit", "size_bytes": size})
+                continue
+            content = path.read_text(encoding="utf-8", errors="ignore")
+        except OSError as error:
+            skipped.append({"path": relative, "reason": type(error).__name__})
+            continue
+        normalized = normalize_private_text(content)
+        candidate_tokens = _tokens(normalized)
+        leaf_values = [normalize_private_text(line) for line in content.splitlines() if line.strip()]
+        if path.suffix.lower() in {".json", ".ipynb"}:
+            try:
+                payload = json.loads(content)
+                stack = [payload]
+                leaf_values = []
+                while stack:
+                    value = stack.pop()
+                    if isinstance(value, Mapping):
+                        stack.extend(value.values())
+                    elif isinstance(value, list):
+                        stack.extend(value)
+                    elif isinstance(value, str):
+                        leaf_values.append(normalize_private_text(value))
+            except ValueError:
+                pass
+        exact_articles = {
+            digest for value in leaf_values
+            if value and (digest := _digest_text(value)) in article_hashes
+        }
+        shingle_matches = _shingle_digests(candidate_tokens, shingle_tokens) & article_shingles
+        aspect_matches: set[bytes] = set()
+        for length, private_hashes in aspect_hashes_by_length.items():
+            if length > len(candidate_tokens):
+                continue
+            # One-token aspects are only counted as exact structured/line
+            # values; otherwise common nouns create misleading matches.
+            if length == 1:
+                aspect_matches.update(
+                    digest for value in leaf_values
+                    if value and len(_tokens(value)) == 1
+                    and (digest := _digest_text(value)) in private_hashes
+                )
+                continue
+            for index in range(len(candidate_tokens) - length + 1):
+                digest = _digest_text(" ".join(candidate_tokens[index : index + length]))
+                if digest in private_hashes:
+                    aspect_matches.add(digest)
+        if exact_articles or shingle_matches or aspect_matches:
+            matches.append(
+                {
+                    "path": relative,
+                    "exact_article_value_count": len(exact_articles),
+                    "distinct_long_shingle_match_count": len(shingle_matches),
+                    "distinct_aspect_match_count": len(aspect_matches),
+                }
+            )
+    return {
+        "candidate_file_count": len(candidates),
+        "scanned_file_count": len(candidates) - len(skipped),
+        "skipped_files": skipped,
+        "private_unique_article_count": len(article_hashes),
+        "private_unique_aspect_count": sum(len(values) for values in aspect_hashes_by_length.values()),
+        "shingle_tokens": shingle_tokens,
+        "files_with_matches": matches,
+        "contains_source_text_or_names": False,
+        "interpretation": (
+            "Any match in a tracked file requires review. Long shingles indicate possible verbatim "
+            "corpus excerpts; aspect matches can also be legitimate public entity mentions."
         ),
     }
 

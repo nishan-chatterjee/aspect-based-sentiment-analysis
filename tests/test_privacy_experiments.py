@@ -12,6 +12,7 @@ from aspectbench.privacy.experiments import (
     normalize_private_text,
     permuted_aspect_rows,
     pseudonymized_rows,
+    release_surface_overlap_report,
 )
 
 
@@ -94,3 +95,39 @@ def test_normalization_and_finite_json():
         "bad": None,
         "array": 1,
     }
+
+
+def test_release_surface_overlap_is_aggregate_only(tmp_path):
+    private = [
+        row(
+            "Ovo je dovoljno dug privatan članak sa mnogo različitih riječi koje ne smiju "
+            "završiti u javnom repozitoriju bez prethodne provjere i jasnog odobrenja vlasnika",
+            "Privatna Organizacija",
+            1,
+            "private-one",
+        )
+    ]
+    leaked = tmp_path / "program.json"
+    leaked.write_text(
+        '{"aspect": "Privatna Organizacija", "example": '
+        '"Ovo je dovoljno dug privatan članak sa mnogo različitih riječi koje ne smiju '
+        'završiti u javnom repozitoriju bez prethodne provjere i jasnog odobrenja vlasnika '
+        '<aspect>Privatna Organizacija</aspect>"}',
+        encoding="utf-8",
+    )
+    clean = tmp_path / "README.md"
+    clean.write_text("Synthetic documentation only.", encoding="utf-8")
+    report = release_surface_overlap_report(
+        private,
+        repository_root=tmp_path,
+        candidate_paths=[leaked, clean],
+        shingle_tokens=12,
+    )
+    assert report["candidate_file_count"] == 2
+    assert len(report["files_with_matches"]) == 1
+    match = report["files_with_matches"][0]
+    assert match["distinct_long_shingle_match_count"] > 0
+    assert match["distinct_aspect_match_count"] == 1
+    serialized = str(report)
+    assert "Privatna Organizacija" not in serialized
+    assert "dovoljno dug" not in serialized

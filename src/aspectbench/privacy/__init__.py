@@ -8,6 +8,8 @@ from .experiments import (
     exact_overlap_report,
     model_membership_report,
     near_duplicate_report,
+    release_surface_overlap_report,
+    tracked_release_paths,
 )
 
 __all__ = [
@@ -19,4 +21,6 @@ __all__ = [
     "membership_attack_report",
     "model_membership_report",
     "near_duplicate_report",
+    "release_surface_overlap_report",
+    "tracked_release_paths",
 ]

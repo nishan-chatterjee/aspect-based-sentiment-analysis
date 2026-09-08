@@ -13,6 +13,7 @@ def test_membership_attack_detects_separated_scores():
 
     assert report["auc"] == 1.0
     assert report["maximum_tpr_minus_fpr"] == 1.0
+    assert report["permutation_p_two_sided"] <= 1.0
     assert report["low_fpr_operating_points"]["1%"]["available"] is False
 
 

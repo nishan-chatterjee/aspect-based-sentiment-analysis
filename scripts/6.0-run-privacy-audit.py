@@ -39,6 +39,7 @@ from aspectbench.privacy.experiments import (  # noqa: E402
     normalize_private_text,
     permuted_aspect_rows,
     pseudonymized_rows,
+    release_surface_overlap_report,
     safe_prediction_scores,
 )
 from aspectbench.registry import select_models  # noqa: E402
@@ -67,6 +68,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--similarity-eval-limit", type=int, default=2000)
     parser.add_argument("--bootstrap-samples", type=int, default=1000)
     parser.add_argument("--permutation-samples", type=int, default=1000)
+    parser.add_argument("--release-shingle-tokens", type=int, default=24)
+    parser.add_argument("--release-scan-max-mib", type=int, default=64)
     parser.add_argument("--seed", type=int, default=42)
     parser.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--skip-unavailable", action=argparse.BooleanOptionalAction, default=True)
@@ -83,17 +86,35 @@ def load_payload(path: Path) -> dict[str, list[dict[str, Any]]]:
 
 
 def selected_split(
-    repository_root: Path, model: str, language: str, variant: str
+    repository_root: Path,
+    model_root: Path,
+    model: str,
+    language: str,
+    variant: str,
 ) -> int:
-    # The release registry is authoritative for historical checkpoints. Older
-    # availability.json entries intentionally omit provenance fields such as
-    # ``run``; BERTić and SloBERTa also share the ``slavic-specific`` HF family.
-    _, registry = load_release_modules(repository_root)
     release_model, release_language = release_coordinates(model, language)
+    availability_path = model_root / release_model / "availability.json"
+    if availability_path.is_file():
+        availability = json.loads(availability_path.read_text())
+        match = next(
+            (
+                row
+                for row in availability["entries"]
+                if row["language"] == release_language and row["mode"] == variant
+            ),
+            None,
+        )
+        if match and match.get("selected_split") is not None:
+            return int(match["selected_split"])
+    # Older availability manifests did not copy the selected run even though
+    # the authoritative release registry retained it. Never guess split 0: a
+    # wrong membership set invalidates the attack.
+    _, registry = load_release_modules(repository_root)
     run = registry.CHECKPOINTS[(release_model, release_language, variant)].get("run")
     if run is None:
         raise ValueError(
-            f"No selected split is recorded for {model}/{language}/{variant}."
+            f"No selected split provenance for {model}/{language}/{variant}; "
+            "membership inference cannot safely label train members."
         )
     return int(run)
 
@@ -102,20 +123,74 @@ def private_record_key(row: dict[str, Any]) -> tuple[str, str]:
     return normalize_private_text(row.get("article")), normalize_private_text(row.get("aspect"))
 
 
-def balanced_sample(
-    rows: list[dict[str, Any]], limit: int, seed: int
-) -> list[dict[str, Any]]:
+def matched_label_samples(
+    members: list[dict[str, Any]],
+    nonmembers: list[dict[str, Any]],
+    limit: int,
+    seed: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+    """Sample equal-size cohorts with exactly matched sentiment counts.
+
+    Equal thirds waste most records when the neutral class is rare. This
+    allocation preserves exact label matching while distributing the requested
+    capacity proportionally across every label's paired availability.
+    """
+
     rng = np.random.default_rng(seed)
-    groups = {label: [row for row in rows if int(row["sentiment"]) == label] for label in (-1, 0, 1)}
-    if any(not group for group in groups.values()):
-        raise ValueError("Every audit cohort must contain all three sentiment labels.")
-    per_class = min(max(1, limit // 3), *(len(group) for group in groups.values()))
-    sampled: list[dict[str, Any]] = []
-    for label, group in groups.items():
-        indices = rng.choice(len(group), per_class, replace=False)
-        sampled.extend(group[int(index)] for index in indices)
-    rng.shuffle(sampled)
-    return sampled
+    member_groups = {
+        label: [row for row in members if int(row["sentiment"]) == label]
+        for label in (-1, 0, 1)
+    }
+    nonmember_groups = {
+        label: [row for row in nonmembers if int(row["sentiment"]) == label]
+        for label in (-1, 0, 1)
+    }
+    capacities = {
+        label: min(len(member_groups[label]), len(nonmember_groups[label]))
+        for label in (-1, 0, 1)
+    }
+    if any(capacity == 0 for capacity in capacities.values()):
+        raise ValueError("Every membership cohort must contain all three sentiment labels.")
+    target = min(limit, sum(capacities.values()))
+    allocation = {label: 1 for label in capacities}
+    remaining = target - len(allocation)
+    while remaining > 0:
+        available = {
+            label: capacities[label] - allocation[label]
+            for label in capacities
+            if capacities[label] > allocation[label]
+        }
+        if not available:
+            break
+        total_available = sum(available.values())
+        additions = {
+            label: min(
+                capacity,
+                max(0, int(np.floor(remaining * capacity / total_available))),
+            )
+            for label, capacity in available.items()
+        }
+        if not any(additions.values()):
+            label = max(available, key=available.get)
+            additions[label] = 1
+        for label, addition in additions.items():
+            addition = min(addition, remaining)
+            allocation[label] += addition
+            remaining -= addition
+            if remaining == 0:
+                break
+    sampled_members, sampled_nonmembers = [], []
+    for label in (-1, 0, 1):
+        count = allocation[label]
+        left = rng.choice(len(member_groups[label]), count, replace=False)
+        right = rng.choice(len(nonmember_groups[label]), count, replace=False)
+        sampled_members.extend(member_groups[label][int(index)] for index in left)
+        sampled_nonmembers.extend(nonmember_groups[label][int(index)] for index in right)
+    rng.shuffle(sampled_members)
+    rng.shuffle(sampled_nonmembers)
+    return sampled_members, sampled_nonmembers, {
+        str(label): allocation[label] for label in (-1, 0, 1)
+    }
 
 
 def comparable_cohorts(
@@ -125,7 +200,13 @@ def comparable_cohorts(
     *,
     limit: int,
     seed: int,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], dict[str, int]]:
+) -> tuple[
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    list[dict[str, Any]],
+    dict[str, Any],
+]:
     # Any evaluation row duplicated anywhere in the full training partition is
     # a member for this threat model, even if that train row was not sampled.
     # Excluding only overlaps with sampled members would mislabel known members
@@ -133,12 +214,17 @@ def comparable_cohorts(
     full_train_keys = {private_record_key(row) for row in train}
     validation_filtered = [row for row in validation if private_record_key(row) not in full_train_keys]
     test_filtered = [row for row in test if private_record_key(row) not in full_train_keys]
-    members = balanced_sample(train, limit, seed)
-    validation_sample = balanced_sample(validation_filtered, limit, seed + 1000)
-    test_sample = balanced_sample(test_filtered, limit, seed + 2000)
-    return members, validation_sample, test_sample, {
+    validation_members, validation_sample, validation_labels = matched_label_samples(
+        train, validation_filtered, limit, seed + 1000
+    )
+    test_members, test_sample, test_labels = matched_label_samples(
+        train, test_filtered, limit, seed + 2000
+    )
+    return validation_members, validation_sample, test_members, test_sample, {
         "validation_exact_member_rows_excluded": len(validation) - len(validation_filtered),
         "test_exact_member_rows_excluded": len(test) - len(test_filtered),
+        "validation_label_counts_per_membership_cohort": validation_labels,
+        "test_label_counts_per_membership_cohort": test_labels,
     }
 
 
@@ -212,7 +298,11 @@ def review_triggers(report: dict[str, Any]) -> list[dict[str, Any]]:
         membership = report.get("model_audit", {}).get("membership", {}).get(cohort, {})
         for feature, result in membership.get("univariate_attacks", {}).items():
             interval = result["auc_bootstrap_95_ci"]
-            if result["auc"] >= 0.60 and interval[0] > 0.50:
+            if (
+                result["auc"] >= 0.60
+                and interval[0] > 0.50
+                and result.get("permutation_p_two_sided", 1.0) <= 0.05
+            ):
                 triggers.append({"type": "membership", "cohort": cohort, "feature": feature, "auc": result["auc"], "ci": interval})
         combined = membership.get("combined_attack", {}).get("held_out_auc", {})
         if combined.get("mean", 0.0) >= 0.60:
@@ -223,9 +313,15 @@ def review_triggers(report: dict[str, Any]) -> list[dict[str, Any]]:
     overlap = report["data_audit"]["exact_overlap"]["cross_cohort"]["train_vs_test"]["normalized_article_and_aspect"]
     if overlap["right_rows_overlapping_left"]:
         triggers.append({"type": "exact_train_test_overlap", **overlap})
-    near = report["data_audit"]["near_duplicates"]["test"]["fraction_at_or_above"]["0.95"]
+    near = report["data_audit"]["near_duplicates_after_exact_exclusion"]["test"]["fraction_at_or_above"]["0.95"]
     if near >= 0.01:
         triggers.append({"type": "near_duplicate_rate", "test_fraction_at_0.95": near})
+    surface = report["data_audit"].get("tracked_release_surface", {})
+    for match in surface.get("files_with_matches", []):
+        if match["exact_article_value_count"] or match["distinct_long_shingle_match_count"]:
+            triggers.append({"type": "tracked_corpus_text_match", **match})
+        elif match["distinct_aspect_match_count"]:
+            triggers.append({"type": "tracked_aspect_name_match", **match})
     return triggers
 
 
@@ -236,20 +332,29 @@ def run_model(
     output_dir: Path,
 ) -> dict[str, Any]:
     prefix = "slovene" if args.dataset == "sl" else "hbs"
-    split = selected_split(args.repository_root, model, args.dataset, args.variant)
+    split = selected_split(
+        args.repository_root, model_root, model, args.dataset, args.variant
+    )
     split_payload = load_payload(args.repository_root / "data" / args.dataset / f"{prefix}_train_val_{split}.json")
     test = load_payload(args.repository_root / "data" / args.dataset / f"{prefix}_test.json")["test"]
     train, validation = split_payload["train"], split_payload["val"]
-    members, validation_sample, test_sample, exclusions = comparable_cohorts(
+    validation_members, validation_sample, test_members, test_sample, exclusions = comparable_cohorts(
         train, validation, test, limit=args.max_per_cohort, seed=args.seed + split
     )
     data_cache = output_dir.parent / "_data" / f"split-{split}.json"
-    if data_cache.is_file():
-        data_audit = json.loads(data_cache.read_text(encoding="utf-8"))
-    else:
+    data_audit = json.loads(data_cache.read_text(encoding="utf-8")) if data_cache.is_file() else None
+    if not data_audit or any(
+        key not in data_audit
+        for key in ("tracked_release_surface", "near_duplicates_after_exact_exclusion")
+    ):
         data_audit = {
             "cohort_sizes": {"train": len(train), "validation": len(validation), "test": len(test)},
-            "sample_sizes": {"members": len(members), "validation": len(validation_sample), "test": len(test_sample)},
+            "sample_sizes": {
+                "validation_members": len(validation_members),
+                "validation_nonmembers": len(validation_sample),
+                "test_members": len(test_members),
+                "test_nonmembers": len(test_sample),
+            },
             "membership_overlap_exclusions": exclusions,
             "exact_overlap": exact_overlap_report(train, validation, test),
             "near_duplicates": {
@@ -264,15 +369,33 @@ def run_model(
                     evaluation_limit=args.similarity_eval_limit,
                 ),
             },
+            "near_duplicates_after_exact_exclusion": {
+                "validation": near_duplicate_report(
+                    train, validation_sample, seed=args.seed + 10 + split,
+                    train_limit=args.similarity_train_limit,
+                    evaluation_limit=args.similarity_eval_limit,
+                ),
+                "test": near_duplicate_report(
+                    train, test_sample, seed=args.seed + 110 + split,
+                    train_limit=args.similarity_train_limit,
+                    evaluation_limit=args.similarity_eval_limit,
+                ),
+            },
             "aspect_distribution": aspect_distribution_report(train, validation, test),
             "text_distribution_classifier": {
-                "validation": distribution_classifier_report(members, validation_sample, seed=args.seed),
-                "test": distribution_classifier_report(members, test_sample, seed=args.seed + 1),
+                "validation": distribution_classifier_report(validation_members, validation_sample, seed=args.seed),
+                "test": distribution_classifier_report(test_members, test_sample, seed=args.seed + 1),
             },
+            "tracked_release_surface": release_surface_overlap_report(
+                [*train, *validation, *test],
+                repository_root=args.repository_root,
+                shingle_tokens=args.release_shingle_tokens,
+                maximum_file_bytes=args.release_scan_max_mib * 1024 * 1024,
+            ),
         }
         atomic_json(data_cache, data_audit)
     report: dict[str, Any] = {
-        "schema_version": 2,
+        "schema_version": 3,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "dataset": args.dataset,
         "variant": args.variant,
@@ -312,27 +435,37 @@ def run_model(
     )
     batch_size = args.han_batch_size if getattr(engine, "backend", "") == "han" else args.batch_size
     train_aspect_counts = Counter(normalize_private_text(row.get("aspect")) for row in train)
-    member_outputs = infer(engine, members, batch_size, args.seed, args.mc_passes)
+    validation_member_outputs = infer(
+        engine, validation_members, batch_size, args.seed, args.mc_passes
+    )
+    test_member_outputs = infer(
+        engine, test_members, batch_size, args.seed + 1, args.mc_passes
+    )
     validation_outputs = infer(engine, validation_sample, batch_size, args.seed, args.mc_passes)
     test_outputs = infer(engine, test_sample, batch_size, args.seed, args.mc_passes)
-    member_scores = safe_prediction_scores(member_outputs, members, train_aspect_counts)
+    validation_member_scores = safe_prediction_scores(
+        validation_member_outputs, validation_members, train_aspect_counts
+    )
+    test_member_scores = safe_prediction_scores(
+        test_member_outputs, test_members, train_aspect_counts
+    )
     validation_scores = safe_prediction_scores(validation_outputs, validation_sample, train_aspect_counts)
     test_scores = safe_prediction_scores(test_outputs, test_sample, train_aspect_counts)
     membership = {
         "validation_nonmember": model_membership_report(
-            member_scores, validation_scores, seed=args.seed,
+            validation_member_scores, validation_scores, seed=args.seed,
             bootstrap_samples=args.bootstrap_samples,
             permutation_samples=args.permutation_samples,
         ),
         "test_nonmember": model_membership_report(
-            member_scores, test_scores, seed=args.seed + 1,
+            test_member_scores, test_scores, seed=args.seed + 1,
             bootstrap_samples=args.bootstrap_samples,
             permutation_samples=args.permutation_samples,
         ),
     }
-    cf_n = min(args.counterfactual_limit, len(members), len(test_sample))
-    member_cf, test_cf = members[:cf_n], test_sample[:cf_n]
-    member_original, test_original = member_outputs[:cf_n], test_outputs[:cf_n]
+    cf_n = min(args.counterfactual_limit, len(test_members), len(test_sample))
+    member_cf, test_cf = test_members[:cf_n], test_sample[:cf_n]
+    member_original, test_original = test_member_outputs[:cf_n], test_outputs[:cf_n]
     counterfactuals = {
         "member_pseudonym": counterfactual_aggregate(
             member_original,
@@ -392,7 +525,7 @@ def run_model(
         "neutral_context_aspect_probe": neutral,
     }
     report["review_triggers"] = review_triggers(report)
-    del engine, member_outputs, validation_outputs, test_outputs
+    del engine, validation_member_outputs, test_member_outputs, validation_outputs, test_outputs
     gc.collect()
     try:
         import torch
@@ -409,6 +542,8 @@ def main() -> None:
     args.repository_root = args.repository_root.resolve()
     if args.mc_passes == 1 or args.mc_passes < 0:
         raise ValueError("--mc-passes must be 0 or at least 2.")
+    if args.max_per_cohort < 3:
+        raise ValueError("--max-per-cohort must be at least 3 (one row per sentiment label).")
     for name in ("max_per_cohort", "counterfactual_limit", "neutral_probe_limit"):
         if getattr(args, name) < 1:
             raise ValueError(f"--{name.replace('_', '-')} must be positive.")
@@ -428,7 +563,7 @@ def main() -> None:
     atomic_json(
         output_dir / "manifest.json",
         {
-            "schema_version": 2,
+            "schema_version": 3,
             "run_id": args.run_id,
             "dataset": args.dataset,
             "variant": args.variant,

@@ -158,9 +158,13 @@ def membership_attack_report(
             )
         )
     permuted_at_least_observed = 0
+    observed_distance = abs(auc - 0.5)
+    permuted_at_least_as_extreme = 0
     for _ in range(permutation_samples):
         permuted = rng.permutation(labels)
-        permuted_at_least_observed += int(roc_auc_score(permuted, scores) >= auc)
+        permuted_auc = roc_auc_score(permuted, scores)
+        permuted_at_least_observed += int(permuted_auc >= auc)
+        permuted_at_least_as_extreme += int(abs(permuted_auc - 0.5) >= observed_distance)
     return {
         "member_n": len(members),
         "nonmember_n": len(nonmembers),
@@ -170,6 +174,8 @@ def membership_attack_report(
             float(np.quantile(bootstraps, 0.975)),
         ],
         "permutation_p_one_sided": (permuted_at_least_observed + 1)
+        / (permutation_samples + 1),
+        "permutation_p_two_sided": (permuted_at_least_as_extreme + 1)
         / (permutation_samples + 1),
         "maximum_tpr_minus_fpr": float(advantages[best]),
         "threshold_at_maximum_advantage": float(thresholds[best]),
