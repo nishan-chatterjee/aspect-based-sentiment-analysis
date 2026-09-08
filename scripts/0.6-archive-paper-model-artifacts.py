@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
@@ -106,10 +107,14 @@ def main() -> None:
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--include-training-state", action="store_true")
     parser.add_argument("--sha256", action="store_true")
+    parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()
     roots = [args.release_root.resolve(), args.archive_root.resolve()]
     items = inventory(args.source_root.resolve(), roots[0], args.include_training_state)
+    if args.workers < 1:
+        raise ValueError("--workers must be positive")
     rows = []
+    operations = []
     for item in items:
         row = {"source": str(item.source), "relative_destination": str(item.relative), "kind": item.kind, "size_bytes": item.source.stat().st_size}
         if args.sha256:
@@ -118,14 +123,29 @@ def main() -> None:
         for root in roots:
             destination = root / item.relative
             state = "present" if destination.is_file() and destination.stat().st_size == item.source.stat().st_size else "pending"
+            destination_row = {"root": str(root), "path": str(destination), "status": state}
+            row["destinations"].append(destination_row)
             if args.execute and state == "pending":
-                destination.parent.mkdir(parents=True, exist_ok=True)
-                temporary = destination.with_suffix(destination.suffix + ".partial")
-                subprocess.run(["cp", "--reflink=auto", "--preserve=mode,timestamps", str(item.source), str(temporary)], check=True)
-                os.replace(temporary, destination)
-                state = "copied"
-            row["destinations"].append({"root": str(root), "path": str(destination), "status": state})
+                operations.append((item.source, destination, destination_row))
         rows.append(row)
+    def copy_one(source: Path, destination: Path) -> str:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        temporary = destination.with_suffix(destination.suffix + ".partial")
+        subprocess.run(["cp", "--reflink=auto", "--preserve=mode,timestamps", str(source), str(temporary)], check=True)
+        os.replace(temporary, destination)
+        return str(destination)
+    if operations:
+        with ThreadPoolExecutor(max_workers=args.workers) as executor:
+            futures = {
+                executor.submit(copy_one, source, destination): destination_row
+                for source, destination, destination_row in operations
+            }
+            completed = 0
+            for future in as_completed(futures):
+                future.result()
+                futures[future]["status"] = "copied"
+                completed += 1
+                print(f"copied {completed}/{len(operations)}", flush=True)
     checkpoints = sum(row["kind"] == "checkpoint" for row in rows)
     payload = {"schema_version": 1, "generated_at": datetime.now(timezone.utc).isoformat(), "checkpoint_count": checkpoints, "item_count": len(rows), "include_training_state": args.include_training_state, "items": rows}
     for root in roots:
