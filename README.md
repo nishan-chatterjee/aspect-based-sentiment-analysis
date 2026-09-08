@@ -474,6 +474,12 @@ example is in `notebooks/evaluation-and-aspect-reporting.ipynb`. See
 `docs/extending-models-and-data.md` for the kebab-case model registration and
 new-dataset contracts.
 
+For the exact one-versus-three-distribution training contract, custom dataset
+loader interface, four-A40 update smoke, public DSPy program matrix, and
+optimization/reload smoke, see `docs/training-and-dspy-pathways.md`. Current
+completion and pending archive work are recorded in
+`docs/refactor-release-tracker.md`.
+
 ### Model privacy and memorization screen
 
 `notebooks/model-privacy-and-memorization-audit.ipynb` provides an

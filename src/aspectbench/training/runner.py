@@ -38,6 +38,15 @@ def _uncertainty_export(
     output.mkdir(parents=True, exist_ok=True)
     all_rows: list[dict[str, Any]] = []
     for index, batch in enumerate(chunks(records, shard_size)):
+        shard_path = output / f"shard-{index:06d}.json"
+        if shard_path.is_file():
+            try:
+                saved = json.loads(shard_path.read_text(encoding="utf-8"))
+            except (OSError, ValueError):
+                saved = None
+            if isinstance(saved, list) and len(saved) == len(batch):
+                all_rows.extend(saved)
+                continue
         predictions = engine.predict_batch(
             batch, batch_size=batch_size, mc_passes=mc_passes, seed=seed + index
         )
@@ -45,7 +54,7 @@ def _uncertainty_export(
             _normalize_output(prediction, source, model)
             for prediction, source in zip(predictions, batch, strict=True)
         ]
-        atomic_json(output / f"shard-{index:06d}.json", rows)
+        atomic_json(shard_path, rows)
         all_rows.extend(rows)
     atomic_json(output / "predictions-with-uncertainty.json", all_rows)
     atomic_json(

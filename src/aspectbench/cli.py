@@ -253,6 +253,11 @@ def _defer_optimize_command(args: argparse.Namespace) -> int:
         records = load_records(
             path, keys=("train",) if split == "train" else ("val", "validation")
         )
+        limit = args.train_limit if split == "train" else args.val_limit
+        if limit is not None:
+            if limit < 1:
+                raise ValueError("Optimization record limits must be positive.")
+            records = records[:limit]
         output = run_inference(
             records,
             models=args.models or [args.primary_model],
@@ -568,6 +573,8 @@ def build_parser() -> argparse.ArgumentParser:
     optimize.add_argument("--model-type", choices=("chat", "text"), default="chat")
     optimize.add_argument("--auto", choices=("light", "medium", "heavy"), default="light")
     optimize.add_argument("--seed", type=int, default=42)
+    optimize.add_argument("--train-limit", type=int, default=None)
+    optimize.add_argument("--val-limit", type=int, default=None)
     optimize.add_argument("--resume", action=argparse.BooleanOptionalAction, default=True)
     optimize.set_defaults(handler=_defer_optimize_command)
 
