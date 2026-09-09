@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Upload the toolkit and genuine model weights to private personal HF repos."""
+"""Upload the toolkit and genuine model weights to personal HF repositories."""
 
 from __future__ import annotations
 
@@ -36,6 +36,11 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Perform uploads. Without this flag, only print the intended operations.",
     )
+    parser.add_argument(
+        "--private",
+        action="store_true",
+        help="Keep uploaded repositories private. The approved release default is public.",
+    )
     return parser.parse_args()
 
 
@@ -44,10 +49,13 @@ def available_count(family_dir: Path) -> int:
     return sum(bool(entry["available"]) for entry in availability["entries"])
 
 
-def assert_private(api: HfApi, repo_id: str, token: str | None) -> None:
+def assert_visibility(
+    api: HfApi, repo_id: str, token: str | None, *, private: bool
+) -> None:
     info = api.repo_info(repo_id=repo_id, repo_type="model", token=token)
-    if not info.private:
-        raise RuntimeError(f"Privacy verification failed: {repo_id} is public.")
+    if bool(info.private) != private:
+        expected = "private" if private else "public"
+        raise RuntimeError(f"Visibility verification failed: {repo_id} is not {expected}.")
 
 
 def main() -> None:
@@ -80,18 +88,19 @@ def main() -> None:
     for repo_id, folder, is_toolkit in operations:
         if not repo_id.startswith(f"{NAMESPACE}/"):
             raise RuntimeError(f"Namespace guard rejected {repo_id}.")
-        print(f"PRIVATE UPLOAD {folder} -> {repo_id}", flush=True)
+        visibility = "PRIVATE" if args.private else "PUBLIC"
+        print(f"{visibility} UPLOAD {folder} -> {repo_id}", flush=True)
         if not args.execute:
             continue
         api.create_repo(
             repo_id=repo_id,
             repo_type="model",
-            private=True,
+            private=args.private,
             exist_ok=True,
             token=args.token,
         )
         api.update_repo_settings(
-            repo_id=repo_id, repo_type="model", private=True, token=args.token
+            repo_id=repo_id, repo_type="model", private=args.private, token=args.token
         )
         if is_toolkit:
             api.upload_folder(
@@ -123,7 +132,7 @@ def main() -> None:
                 commit_message="Add canonical HBS and Slovenian checkpoints",
                 token=args.token,
             )
-        assert_private(api, repo_id, args.token)
+        assert_visibility(api, repo_id, args.token, private=args.private)
         api.add_collection_item(
             collection_slug=COLLECTION_SLUG,
             item_id=repo_id,
@@ -131,7 +140,7 @@ def main() -> None:
             exists_ok=True,
             token=args.token,
         )
-        print(f"VERIFIED PRIVATE {repo_id}", flush=True)
+        print(f"VERIFIED {visibility} {repo_id}", flush=True)
 
     if not args.execute:
         print("Dry run only. Re-run with --execute to upload.", flush=True)

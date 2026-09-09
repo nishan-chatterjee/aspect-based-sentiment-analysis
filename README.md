@@ -8,6 +8,7 @@ LLMs.
 
 - [Frontiers article](https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract)
 - [HBS AspectBench 1.0 on CLARIN.SI](http://hdl.handle.net/11356/2356)
+- [Hugging Face toolkit](https://huggingface.co/nishan-chatterjee/aspect-based-sentiment-analysis)
 - [Hugging Face collection](https://huggingface.co/collections/nishan-chatterjee/aspect-based-sentiment-analysis-6a9016a6d9cab7b093f122d3)
 - [Copy/paste interactive GPU runbook](docs/interactive-smoke-tests.md)
 
@@ -71,9 +72,64 @@ names in examples are illustrative, not the complete list.
 Every family has its own adapter under `src/aspectbench/models/`; numbered
 files under `scripts/` only aggregate them. A requested missing checkpoint
 fails clearly. With `--models all`, unavailable combinations are logged and
-skipped so the remaining grid can finish. The current private Hugging Face
-release contains all 28 family/language/mode slots and the complete matrix has
+skipped so the remaining grid can finish. The public Hugging Face release
+contains all 28 family/language/mode slots and the complete matrix has
 passed load, single/batch inference, and MC-dropout smoke validation.
+
+### Which model should I use?
+
+Start with **masked XLM-R** (`--models xlmr --variant masked`). It has the best
+three-run test Macro-F1 among the seven released single-model families in both
+languages: 73.80 for Slovenian and 82.21 for HBS. For long articles, add
+**masked Longformer**; for a structurally different hierarchical expert, add
+**masked HAN-XLM-R**. The three-model command below is a practical first
+ensemble and returns individual predictions plus majority and confidence
+votes.
+
+The following test-set scores are means over three fixed train/validation
+splits; `±` is the standard deviation. Precision and recall are macro-averaged,
+and all metrics except QWK are percentages. XLM-R `unmasked` is the paper's
+**Truncated** strategy. XLM-R `masked` is **Truncated + Masked**: it was
+completed after the accepted-manuscript table was assembled and is reported in
+the preserved final-results analysis.
+
+#### Slovenian released-model results
+
+| Model | Strategy | Accuracy | Precision | Recall | Macro F1 | QWK | Negative F1 | Neutral F1 | Positive F1 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| BGE-M3 + MLP | Unmasked | 90.17 ± 0.21 | 79.00 ± 2.69 | 63.16 ± 1.02 | 68.39 ± 1.03 | .640 ± .012 | 40.98 ± 2.25 | 94.18 ± 0.11 | 70.02 ± 1.14 |
+| BGE-M3 + MLP | Masked | 90.39 ± 0.11 | 75.34 ± 1.72 | 62.86 ± 1.07 | 67.21 ± 1.29 | .653 ± .007 | 35.82 ± 3.88 | 94.29 ± 0.06 | 71.53 ± 0.64 |
+| **XLM-R (truncated)** | Unmasked | 90.28 ± 0.33 | 73.12 ± 1.55 | 67.58 ± 0.29 | 70.03 ± 0.80 | .659 ± .013 | 43.90 ± 1.67 | 94.20 ± 0.19 | 71.99 ± 1.13 |
+| **XLM-R (truncated)** | **Masked** | **91.11 ± 0.15** | **78.97 ± 2.18** | **70.59 ± 1.65** | **73.80 ± 1.69** | **.697 ± .006** | **51.56 ± 5.61** | **94.65 ± 0.09** | **75.18 ± 0.70** |
+| HAN-XLM-R | Unmasked | 89.28 ± 0.25 | 71.05 ± 0.71 | 69.29 ± 0.69 | 70.11 ± 0.43 | .640 ± .007 | 46.36 ± 1.92 | 93.53 ± 0.15 | 70.42 ± 0.72 |
+| HAN-XLM-R | Masked | 90.37 ± 0.15 | 74.64 ± 1.30 | 69.92 ± 1.39 | 71.57 ± 0.47 | .685 ± .001 | 46.05 ± 1.58 | 94.14 ± 0.11 | 74.51 ± 0.10 |
+| XLM-R Longformer | Unmasked | 90.28 ± 0.18 | 73.72 ± 2.23 | 69.58 ± 2.13 | 71.47 ± 2.01 | .663 ± .008 | 48.12 ± 5.78 | 94.19 ± 0.10 | 72.09 ± 0.64 |
+| XLM-R Longformer | Masked | 91.13 ± 0.43 | 78.68 ± 2.77 | 69.00 ± 0.55 | 72.50 ± 1.05 | .697 ± .013 | 47.50 ± 1.89 | 94.66 ± 0.26 | 75.35 ± 1.10 |
+| mDeBERTa-v3 | Unmasked | 89.83 ± 0.97 | 74.59 ± 2.17 | 68.30 ± 1.19 | 70.71 ± 1.82 | .660 ± .020 | 46.18 ± 3.64 | 93.84 ± 0.65 | 72.11 ± 1.48 |
+| mDeBERTa-v3 | Masked | 90.62 ± 0.26 | 77.41 ± 0.52 | 67.75 ± 0.71 | 71.30 ± 0.60 | .678 ± .011 | 45.86 ± 0.67 | 94.36 ± 0.15 | 73.66 ± 1.00 |
+| mT5 | Unmasked | 90.25 ± 0.38 | 71.45 ± 1.87 | 65.21 ± 1.55 | 67.75 ± 0.42 | .661 ± .005 | 36.53 ± 1.59 | 94.16 ± 0.30 | 72.57 ± 0.70 |
+| mT5 | Masked | 90.87 ± 0.24 | 77.27 ± 1.44 | 64.87 ± 1.91 | 69.37 ± 1.12 | .668 ± .013 | 40.85 ± 3.08 | 94.59 ± 0.14 | 72.69 ± 1.30 |
+| SloBERTa | Unmasked | 91.28 ± 0.25 | 75.98 ± 1.33 | 71.17 ± 2.52 | 73.16 ± 1.03 | .700 ± .006 | 49.19 ± 3.57 | 94.77 ± 0.16 | 75.51 ± 0.75 |
+| SloBERTa | Masked | 91.62 ± 0.02 | 77.19 ± 0.83 | 70.03 ± 0.12 | 73.03 ± 0.31 | .710 ± .005 | 47.59 ± 1.47 | 94.98 ± 0.02 | 76.52 ± 0.60 |
+
+#### HBS released-model results
+
+| Model | Strategy | Accuracy | Precision | Recall | Macro F1 | QWK | Negative F1 | Neutral F1 | Positive F1 |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| BGE-M3 + MLP | Unmasked | 83.95 ± 0.12 | 80.98 ± 0.17 | 77.16 ± 0.27 | 78.76 ± 0.25 | .759 ± .002 | 65.63 ± 0.60 | 84.16 ± 0.20 | 86.49 ± 0.01 |
+| BGE-M3 + MLP | Masked | 84.05 ± 0.22 | 80.59 ± 0.12 | 77.72 ± 0.18 | 78.93 ± 0.11 | .761 ± .002 | 65.91 ± 0.33 | 84.18 ± 0.37 | 86.70 ± 0.22 |
+| **XLM-R (truncated)** | Unmasked | 85.42 ± 0.22 | 84.63 ± 0.83 | 78.32 ± 0.60 | 80.84 ± 0.24 | .789 ± .003 | 69.36 ± 1.30 | 85.76 ± 0.20 | 87.41 ± 0.47 |
+| **XLM-R (truncated)** | **Masked** | **86.37 ± 0.15** | **82.20 ± 0.18** | **82.33 ± 0.54** | **82.21 ± 0.35** | **.809 ± .004** | **71.35 ± 0.93** | **86.18 ± 0.08** | **89.10 ± 0.18** |
+| HAN-XLM-R | Unmasked | 83.86 ± 0.43 | 80.81 ± 1.22 | 78.57 ± 0.56 | 79.50 ± 0.81 | .764 ± .005 | 68.34 ± 1.99 | 83.74 ± 0.39 | 86.41 ± 0.29 |
+| HAN-XLM-R | Masked | 84.62 ± 0.30 | 80.39 ± 0.73 | 80.84 ± 0.47 | 80.53 ± 0.50 | .784 ± .004 | 69.84 ± 1.06 | 84.36 ± 0.35 | 87.39 ± 0.16 |
+| XLM-R Longformer | Unmasked | 84.45 ± 0.34 | 83.28 ± 0.60 | 77.22 ± 0.50 | 79.65 ± 0.14 | .770 ± .005 | 67.63 ± 0.69 | 84.86 ± 0.22 | 86.47 ± 0.64 |
+| XLM-R Longformer | Masked | 85.87 ± 0.09 | 81.39 ± 0.61 | 81.43 ± 0.19 | 81.37 ± 0.31 | .800 ± .001 | 69.60 ± 1.00 | 85.80 ± 0.22 | 88.69 ± 0.20 |
+| mDeBERTa-v3 | Unmasked | 82.93 ± 1.78 | 82.75 ± 0.63 | 75.38 ± 2.28 | 78.08 ± 1.69 | .749 ± .028 | 66.12 ± 1.81 | 83.44 ± 1.01 | 84.67 ± 2.83 |
+| mDeBERTa-v3 | Masked | 85.17 ± 0.40 | 83.00 ± 0.73 | 79.91 ± 0.02 | 81.15 ± 0.34 | .780 ± .004 | 70.96 ± 0.32 | 85.08 ± 0.64 | 87.42 ± 0.24 |
+| mT5 | Unmasked | 83.98 ± 0.21 | 80.86 ± 0.99 | 76.90 ± 1.48 | 78.37 ± 0.53 | .761 ± .007 | 64.25 ± 1.22 | 83.92 ± 0.19 | 86.94 ± 0.46 |
+| mT5 | Masked | 83.89 ± 0.64 | 78.48 ± 0.58 | 80.15 ± 0.79 | 79.07 ± 0.84 | .766 ± .010 | 66.43 ± 1.38 | 83.59 ± 1.03 | 87.19 ± 0.27 |
+| BERTić | Unmasked | 86.31 ± 0.58 | 84.49 ± 0.17 | 79.74 ± 1.31 | 81.70 ± 0.86 | .802 ± .010 | 70.03 ± 1.57 | 86.38 ± 0.44 | 88.68 ± 0.66 |
+| BERTić | Masked | 85.78 ± 0.38 | 82.69 ± 0.61 | 80.48 ± 0.36 | 81.44 ± 0.17 | .795 ± .004 | 70.30 ± 1.21 | 85.77 ± 0.37 | 88.24 ± 0.57 |
 
 ## Installation and environments
 
@@ -118,6 +174,7 @@ data/hbs/{hbs_train_val_0,hbs_train_val_1,hbs_train_val_2,hbs_test,hbs_aspects}.
 data/sl/{slovene_train_val_0,slovene_train_val_1,slovene_train_val_2,slovene_test,slovene_aspects}.json
 huggingface/models/MODEL/...             # released fine-tuned PLM checkpoints
 models/MODEL/LANGUAGE/VARIANT/RUN-ID/... # newly trained checkpoints
+models/_paper-splits/...                 # private 3-split paper/recovery archive
 models/gemma3-27b-qat/...gguf            # local serving asset
 models/qwen2.5-72b/...gguf               # local serving asset
 outputs/inference/LANGUAGE/RUN-ID/...    # detailed and ensemble predictions
@@ -138,7 +195,7 @@ bash scripts/0.1-download-hbs.sh --archive /path/to/clarin-aspectbench.zip
 # Slovenian: local authorized JSON files only; never commit these records.
 bash scripts/0.2-import-sl-data.sh --source /path/to/authorized/slovene-release
 
-# Released model repositories (requires access while the collection is private).
+# Download the public released model repositories.
 source /opt/easybuild/software/Anaconda3/2024.02-1/etc/profile.d/conda.sh
 conda activate absa
 hf auth login
@@ -304,7 +361,7 @@ compares all three split heads with the paper values.
 
 The canonical four-head recovery (`bge-m3-paper-recovery`) completed without a
 material paper-metric difference and passed all four single/batch inference
-checks. The tensor-only heads are stored in the private
+checks. The tensor-only heads are stored in the public
 `nishan-chatterjee/aspectbench-bge-m3-mlp` repository; the command below is the
 fully reproducible training path, not a prerequisite for ordinary inference.
 
@@ -439,6 +496,38 @@ NUM_WORKERS_PER_ENDPOINTS='12,12,12,12' MAX_PARALLEL=1 \
 bash scripts/2.4-query-dspy-programs.sh
 ```
 
+To validate every published program with one real forced-deferral query, while
+also proving that unsupported slots are reported rather than silently
+substituted, let the four-GPU smoke launcher start a conservative Gemma server
+on GPU 3 and schedule the fine-tuned experts over GPUs 0–2:
+
+```bash
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 RUN_ID=dspy-public-program-smoke \
+GEMMA_MODEL=models/gemma3-27b-qat/gemma-3-27b-it-q4_0.gguf \
+LLAMA_SERVER=./llama.cpp/build/bin/llama-server \
+CONTEXT_SIZE=49152 PARALLEL=4 \
+bash scripts/2.5-dspy-release-smoke-four-gpu.sh
+```
+
+The current matrix expects 18 successful public programs and ten explicit
+skips: the two prompt variants for mT5 in both languages, BGE-M3-MLP in both
+languages, and Slovenian mDeBERTa-v3. No unrelated program is used as a
+fallback. The preserved summary is
+`models/_runs/dspy-release-smoke/dspy-public-program-smoke/summary.json`.
+
+To smoke-test optimization, serialization, reload, and one query of a newly
+created private program, run:
+
+```bash
+PYTHON_BIN=/Utilisateurs/nchatt01/.conda/envs/absa/bin/python \
+GPU_IDS=0,1,2,3 RUN_ID=dspy-optimize-smoke \
+bash scripts/4.3-dspy-optimization-smoke-four-gpu.sh
+```
+
+The optimized program is written beneath the ignored `optimized/` tree shown
+above; it is never promoted to `precalibrated/` automatically.
+
 ## Local LLM serving rule of thumb
 
 On a 48 GB A40/A6000, start one quantized Gemma server per GPU with 16 slots
@@ -488,7 +577,7 @@ new-dataset contracts.
 For the exact one-versus-three-distribution training contract, custom dataset
 loader interface, four-A40 update smoke, public DSPy program matrix, and
 optimization/reload smoke, see `docs/training-and-dspy-pathways.md`. Current
-completion and pending archive work are recorded in
+completion and GPU checks that still need to be run are recorded in
 `docs/refactor-release-tracker.md`.
 
 ### Model privacy and memorization screen
@@ -600,7 +689,7 @@ AUC does not benefit from test-fold vocabulary or IDF statistics.
 
 ### Four-GPU Hugging Face release smoke test
 
-The release smoke test downloads the private Hugging Face repositories into an
+The release smoke test downloads the public Hugging Face repositories into an
 ignored validation run, records the resolved remote revisions, then tests every
 model family against both `huggingface/examples/hbs-tagged-examples.json` and
 `huggingface/examples/sl-tagged-synthetic-examples.json`. Every available
