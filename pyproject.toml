@@ -38,6 +38,9 @@ dspy = [
 [project.scripts]
 aspectbench = "aspectbench.cli:main"
 
+[tool.setuptools]
+license-files = ["LICENSE", "licenses/MIT-previous-releases.txt"]
+
 [tool.setuptools.packages.find]
 where = ["src"]
 

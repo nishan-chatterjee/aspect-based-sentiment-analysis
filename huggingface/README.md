@@ -4,7 +4,9 @@ tags:
 - aspect-based-sentiment-analysis
 - south-slavic
 - text-classification
-license: mit
+license: other
+license_name: polyform-noncommercial-1.0.0
+license_link: LICENSE
 ---
 
 # AspectBench: reusable document-level ABSA inference
@@ -20,7 +22,7 @@ Carlo dropout.
 
 ## Licensing
 
-This repository contains the shared **MIT-licensed software toolkit**, not the
+This repository contains the shared **PolyForm Noncommercial 1.0.0 software toolkit**, not the
 fine-tuned weight files. Its license does not grant commercial rights to the
 separately downloaded AspectBench model contributions.
 
@@ -39,8 +41,12 @@ resolve the project's intended restriction. See the
 [Slavic-specific model card](https://huggingface.co/nishan-chatterjee/aspectbench-slavic-specific).
 
 Noncommercial is about the purpose of use, not academic/company affiliation.
-Dataset access terms are separate. Software remains MIT pending a separate
-licensing decision; earlier grants are not retroactively revoked.
+Dataset access terms are separate. The current project-owned toolkit is
+source-available under the unmodified [PolyForm license](LICENSE), not
+OSI-approved open source. Its permitted-purpose clauses include educational
+and public-research institutions regardless of funding. Third-party terms
+and earlier [MIT grants](licenses/MIT-previous-releases.txt) remain unaffected.
+The software license does not change any separately downloaded model license.
 
 ## Input contract
 

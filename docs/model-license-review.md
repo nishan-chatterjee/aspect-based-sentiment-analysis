@@ -15,8 +15,16 @@ All eight Hugging Face cards cite the Frontiers article and plain abstract URL.
    No new license grant is applied to the Slovenian checkpoints in this pass.
    Review their current public distribution promptly; a blanket noncommercial
    model-release statement is not accurate while this remains unresolved.
-2. Software currently has an MIT license, including its previous public
-   releases. MIT, Apache-2.0 and GPL permit commercial use; GPL adds copyleft,
+2. At the project owner's request, current project-owned software is now
+   offered under the unmodified PolyForm Noncommercial 1.0.0 license, with
+   a scope notice preserving third-party terms and earlier MIT distributions.
+   A custom academic software license draft is provided for review only in
+   `docs/license-options/`; it is not adopted. Rights-holder authority and
+   institutional/legal approval still require review. PolyForm explicitly
+   permits educational/public-research use regardless of funding; do not
+   claim it prohibits all industry-funded institutional research.
+   Previous public software releases used MIT. MIT, Apache-2.0 and GPL
+   permit commercial use; GPL adds copyleft,
    not a noncommercial restriction. CC advises against its licenses for
    software. BSL 1.1 changes to a compatible open-source license no later than
    four years after a version's first public release, so does not provide a
@@ -40,6 +48,7 @@ All eight Hugging Face cards cite the Frontiers article and plain abstract URL.
 - [SloBERTa upstream model card](https://huggingface.co/EMBEDDIA/sloberta/blob/main/README.md)
 - [Business Source License 1.1](https://mariadb.com/bsl11/)
 - [TurboGAP Academic Software Licence](https://turbogap.fi/wiki/index.php/Academic_Software_Licence)
+- [Official PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0)
 
 Base model license metadata checked anonymously on Hugging Face on 2026-09-16:
 XLM-R MIT; XLM-R Longformer Apache-2.0; mDeBERTa-v3 MIT; mT5 Apache-2.0;

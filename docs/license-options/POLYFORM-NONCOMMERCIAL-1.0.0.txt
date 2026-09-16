@@ -1,36 +1,3 @@
-AspectBench software licensing notice — effective 2026-09-16
-
-Required Notice: Copyright (c) 2025 nishan; Copyright (c) 2026 the AspectBench software contributors.
-Required Notice: AspectBench — https://github.com/nishan-chatterjee/aspect-based-sentiment-analysis
-
-Current project-owned software is offered under the unmodified PolyForm
-Noncommercial License 1.0.0 reproduced below, to the extent the relevant
-rights holders are authorized to grant those rights. The licensor is each
-rights holder offering their software contributions under these terms.
-Separate commercial permission must come from the relevant rights holders;
-contact the project through its GitHub repository to enquire.
-
-This is a source-available license, not an OSI-approved open-source license.
-Read the full permitted-purpose clauses: educational and public-research
-institutions, among other listed organizations, have explicit permitted uses
-regardless of funding. This is not a blanket prohibition on every company
-or company-funded research use.
-
-Scope and exclusions:
-- Third-party software, dependencies and separately marked components retain
-  their own licenses. No third-party rights or notices are removed.
-- Model weights / trained heads and datasets have separate terms; see the
-  relevant model card and dataset release. This software license does not
-  override them.
-- Alternative license proposals in docs/license-options are review drafts,
-  not additional licenses offered for the software.
-- Earlier MIT distributions and rights already granted remain unaffected.
-  See licenses/MIT-previous-releases.txt and the corresponding Git history.
-  Merely changing this notice cannot prevent reuse of the same software
-  already obtained under MIT, or remove any other valid prior license.
-
-The official license terms follow without modification.
-
 # PolyForm Noncommercial License 1.0.0
 
 <https://polyformproject.org/licenses/noncommercial/1.0.0>

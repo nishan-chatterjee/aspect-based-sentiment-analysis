@@ -27,10 +27,15 @@ attribution are allowed; commercial use requires separate permission.
 Noncommercial depends on the use's purpose, not the user's institutional type.
 See the [official license](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en).
 
-The **software code remains MIT**, as specified in [LICENSE](LICENSE).
-MIT permits commercial use; changing the software to a research/noncommercial
-license is a separate rights-holder decision, not accomplished by changing the
-model license. Existing license grants are not retroactively revoked.
+Current project-owned **software code is offered under PolyForm Noncommercial
+1.0.0**, as specified in [LICENSE](LICENSE). This is a source-available license,
+not an OSI-approved open-source license. Read its full permitted-purpose clauses:
+educational/public-research institutions and other listed organizations have
+explicit permitted uses regardless of funding. Third-party terms remain intact.
+Earlier [MIT distributions](licenses/MIT-previous-releases.txt) and their grants
+remain unaffected; relabeling already released code cannot remove those rights.
+An alternative [academic software license draft](docs/license-options/README.md)
+is provided for review only, not as an additional grant.
 Dataset access conditions are separate and unchanged.
 
 ## What the system does
