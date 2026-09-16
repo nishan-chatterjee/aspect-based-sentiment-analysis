@@ -12,6 +12,27 @@ LLMs.
 - [Hugging Face collection](https://huggingface.co/collections/nishan-chatterjee/aspect-based-sentiment-analysis-6a9016a6d9cab7b093f122d3)
 - [Copy/paste interactive GPU runbook](docs/interactive-smoke-tests.md)
 
+## Licensing
+
+The AspectBench checkpoint contributions and trained heads are **CC BY-NC 4.0**,
+except the Slovenian SloBERTa checkpoints, whose upstream **CC BY-SA 4.0** terms
+require a separate licensing review. See each model repository's `LICENSE` and
+model card for its exact scope and upstream attribution. A blanket
+noncommercial-only claim cannot be made for SloBERTa without an alternative
+upstream permission. The frozen BGE-M3 encoder retains its upstream MIT license;
+the trained AspectBench MLP heads are CC BY-NC 4.0.
+
+For the CC BY-NC model contributions, noncommercial research and reuse with
+attribution are allowed; commercial use requires separate permission.
+Noncommercial depends on the use's purpose, not the user's institutional type.
+See the [official license](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en).
+
+The **software code remains MIT**, as specified in [LICENSE](LICENSE).
+MIT permits commercial use; changing the software to a research/noncommercial
+license is a separate rights-holder decision, not accomplished by changing the
+model license. Existing license grants are not retroactively revoked.
+Dataset access conditions are separate and unchanged.
+
 ## What the system does
 
 The practical configuration keeps a fine-tuned expert as the default and

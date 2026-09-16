@@ -4,7 +4,7 @@ tags:
 - aspect-based-sentiment-analysis
 - south-slavic
 - text-classification
-license: other
+license: mit
 ---
 
 # AspectBench: reusable document-level ABSA inference
@@ -17,6 +17,30 @@ Carlo dropout.
 - [Model collection overview](https://huggingface.co/collections/nishan-chatterjee/aspect-based-sentiment-analysis-6a9016a6d9cab7b093f122d3)
 - [Reusable inference toolkit](https://huggingface.co/nishan-chatterjee/aspect-based-sentiment-analysis)
 - [GitHub repository](https://github.com/nishan-chatterjee/aspect-based-sentiment-analysis)
+
+## Licensing
+
+This repository contains the shared **MIT-licensed software toolkit**, not the
+fine-tuned weight files. Its license does not grant commercial rights to the
+separately downloaded AspectBench model contributions.
+
+The six non-Slavic-specific model families and the HBS BERTić checkpoint
+contributions are [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/):
+noncommercial research and redistribution with attribution are allowed;
+commercial use requires separate permission. Consult each model card and
+`LICENSE` for exact scope and upstream attribution. Third-party base models,
+tokenizers and code retain their own licenses; the frozen BGE-M3 encoder remains
+upstream MIT while the trained AspectBench MLP heads are CC BY-NC 4.0.
+
+**Slovenian SloBERTa exception:** upstream EMBEDDIA/SloBERTa is CC BY-SA 4.0,
+which cannot simply be replaced with a noncommercial restriction. Those
+checkpoints are not relabeled CC BY-NC and need rights-holder/legal review to
+resolve the project's intended restriction. See the
+[Slavic-specific model card](https://huggingface.co/nishan-chatterjee/aspectbench-slavic-specific).
+
+Noncommercial is about the purpose of use, not academic/company affiliation.
+Dataset access terms are separate. Software remains MIT pending a separate
+licensing decision; earlier grants are not retroactively revoked.
 
 ## Input contract
 
@@ -445,3 +469,21 @@ published only for independently trained variants.
 The public repositories are linked in the table near the top of this card and
 grouped in the AspectBench model collection. `scripts/download.py` restores the
 complete repository layout automatically.
+
+## Citation
+
+Please cite the accompanying article when using AspectBench:
+
+```bibtex
+@article{chatterjee2026aspectbench,
+  title   = {Evaluating Fine-Tuned, Embedding-Based, and Zero-Shot Models for
+             Aspect-Based Sentiment Analysis in South Slavic News},
+  author  = {Chatterjee, Nishan and Koloski, Boshko and Doucet, Antoine and
+             Pollak, Senja and Purver, Matthew},
+  journal = {Frontiers in Artificial Intelligence},
+  volume  = {9},
+  year    = {2026},
+  doi     = {10.3389/frai.2026.1844418},
+  url     = {https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract}
+}
+```

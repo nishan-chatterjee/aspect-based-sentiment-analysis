@@ -9,6 +9,20 @@ repository-code: "https://github.com/nishan-chatterjee/aspect-based-sentiment-an
 url: "https://github.com/nishan-chatterjee/aspect-based-sentiment-analysis"
 preferred-citation:
   type: article
+  authors:
+    - family-names: Chatterjee
+      given-names: Nishan
+    - family-names: Koloski
+      given-names: Boshko
+    - family-names: Doucet
+      given-names: Antoine
+    - family-names: Pollak
+      given-names: Senja
+    - family-names: Purver
+      given-names: Matthew
+  journal: "Frontiers in Artificial Intelligence"
+  volume: "9"
+  year: 2026
   title: "Evaluating Fine-Tuned, Embedding-Based, and Zero-Shot Models for Aspect-Based Sentiment Analysis in South Slavic News"
   doi: "10.3389/frai.2026.1844418"
   url: "https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract"

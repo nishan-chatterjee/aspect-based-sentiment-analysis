@@ -4,7 +4,7 @@ tags:
 - aspect-based-sentiment-analysis
 - south-slavic
 - text-classification
-license: other
+license: cc-by-nc-4.0
 ---
 
 # AspectBench BGE-M3 dense + MLP
@@ -13,6 +13,31 @@ Selected model-only heads for normalized 1024-dimensional `BAAI/bge-m3`
 document embeddings. Each released head is the best validation Macro-F1 result
 among three fixed train/validation splits; test results were not used for
 selection. The shared inference toolkit reconstructs the 1024→512→256→3 MLP.
+
+## License
+
+Copyright (c) 2026 the AspectBench model contributors.
+
+The AspectBench fine-tuned checkpoint contributions / trained heads are licensed under
+[Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/).
+The [official legal code](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en) is incorporated by reference.
+Noncommercial research, evaluation, adaptation and redistribution are allowed
+subject to attribution and the license terms. Commercial use is not granted
+under this license; contact the project for separate permission.
+
+Noncommercial describes the purpose of a use, not whether its user is a
+university or a company. Academic affiliation does not automatically make a
+commercial project noncommercial. The legal code controls, including its
+exceptions and limitations. The material is provided as-is without warranties.
+
+This notice does not relicense third-party base weights, tokenizers, code or
+configuration assets, and does not revoke any rights previously granted.
+AspectBench adapted the listed base models for aspect-based sentiment analysis;
+retain their original attribution and license notices when redistributing.
+
+- HBS and Slovenian: [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3) — upstream MIT.
+
+The frozen BGE-M3 encoder is downloaded separately and remains upstream MIT; the noncommercial grant covers the trained AspectBench MLP heads.
 
 ## What this repository contains
 
@@ -58,3 +83,21 @@ CUDA_VISIBLE_DEVICES=0 aspectbench infer --models bge-m3-mlp --dataset hbs \
 See the shared toolkit at
 [`nishan-chatterjee/aspect-based-sentiment-analysis`](https://huggingface.co/nishan-chatterjee/aspect-based-sentiment-analysis)
 for input examples, uncertainty output, and validation commands.
+
+## Citation
+
+Please cite the accompanying article when using AspectBench:
+
+```bibtex
+@article{chatterjee2026aspectbench,
+  title   = {Evaluating Fine-Tuned, Embedding-Based, and Zero-Shot Models for
+             Aspect-Based Sentiment Analysis in South Slavic News},
+  author  = {Chatterjee, Nishan and Koloski, Boshko and Doucet, Antoine and
+             Pollak, Senja and Purver, Matthew},
+  journal = {Frontiers in Artificial Intelligence},
+  volume  = {9},
+  year    = {2026},
+  doi     = {10.3389/frai.2026.1844418},
+  url     = {https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract}
+}
+```

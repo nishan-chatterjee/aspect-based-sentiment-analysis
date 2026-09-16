@@ -5,6 +5,8 @@ tags:
 - south-slavic
 - text-classification
 license: other
+license_name: aspectbench-language-specific
+license_link: LICENSE
 ---
 
 # AspectBench BERTić / SloBERTa
@@ -13,6 +15,38 @@ Model-only checkpoints for HBS and Slovenian document-level aspect-based
 sentiment analysis. This repository contains 4/4 language-mode
 checkpoint slots. It is used with the shared inference toolkit in
 [`nishan-chatterjee/aspect-based-sentiment-analysis`](https://huggingface.co/nishan-chatterjee/aspect-based-sentiment-analysis).
+
+## License
+
+Copyright (c) 2026 the AspectBench model contributors.
+
+The HBS BERTić masked and unmasked checkpoint contributions only are licensed under
+[Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/).
+The [official legal code](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en) is incorporated by reference.
+Noncommercial research, evaluation, adaptation and redistribution are allowed
+subject to attribution and the license terms. Commercial use is not granted
+under this license; contact the project for separate permission.
+
+Noncommercial describes the purpose of a use, not whether its user is a
+university or a company. Academic affiliation does not automatically make a
+commercial project noncommercial. The legal code controls, including its
+exceptions and limitations. The material is provided as-is without warranties.
+
+This notice does not relicense third-party base weights, tokenizers, code or
+configuration assets, and does not revoke any rights previously granted.
+AspectBench adapted the listed base models for aspect-based sentiment analysis;
+retain their original attribution and license notices when redistributing.
+
+- hbs: [classla/bcms-bertic](https://huggingface.co/classla/bcms-bertic) — upstream Apache-2.0.
+- slovenian: [EMBEDDIA/sloberta](https://huggingface.co/EMBEDDIA/sloberta) — upstream CC BY-SA 4.0.
+
+**Slovenian SloBERTa exception:** the upstream EMBEDDIA/SloBERTa model is
+CC BY-SA 4.0. No CC BY-NC grant or noncommercial restriction is applied here to
+the Slovenian checkpoints. Its ShareAlike terms cannot simply be replaced with
+CC BY-NC. Their licensing needs rights-holder/legal review before the project
+can promise a noncommercial-only release. Obtain an alternative upstream grant,
+use a compatible base model, or agree to retain ShareAlike (which permits
+commercial use). See the [upstream license](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en).
 
 ## Input format
 
@@ -152,3 +186,21 @@ python scripts/predict.py \
 
 The `.pt` files contain model tensors only. Optimizer, scheduler, and
 gradient-scaler state is excluded.
+
+## Citation
+
+Please cite the accompanying article when using AspectBench:
+
+```bibtex
+@article{chatterjee2026aspectbench,
+  title   = {Evaluating Fine-Tuned, Embedding-Based, and Zero-Shot Models for
+             Aspect-Based Sentiment Analysis in South Slavic News},
+  author  = {Chatterjee, Nishan and Koloski, Boshko and Doucet, Antoine and
+             Pollak, Senja and Purver, Matthew},
+  journal = {Frontiers in Artificial Intelligence},
+  volume  = {9},
+  year    = {2026},
+  doi     = {10.3389/frai.2026.1844418},
+  url     = {https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract}
+}
+```

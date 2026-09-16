@@ -1,0 +1,24 @@
+## License
+
+Copyright (c) 2026 the AspectBench model contributors.
+
+The AspectBench fine-tuned checkpoint contributions / trained heads are licensed under
+[Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/).
+The [official legal code](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en) is incorporated by reference.
+Noncommercial research, evaluation, adaptation and redistribution are allowed
+subject to attribution and the license terms. Commercial use is not granted
+under this license; contact the project for separate permission.
+
+Noncommercial describes the purpose of a use, not whether its user is a
+university or a company. Academic affiliation does not automatically make a
+commercial project noncommercial. The legal code controls, including its
+exceptions and limitations. The material is provided as-is without warranties.
+
+This notice does not relicense third-party base weights, tokenizers, code or
+configuration assets, and does not revoke any rights previously granted.
+AspectBench adapted the listed base models for aspect-based sentiment analysis;
+retain their original attribution and license notices when redistributing.
+
+- HBS and Slovenian: [BAAI/bge-m3](https://huggingface.co/BAAI/bge-m3) — upstream MIT.
+
+The frozen BGE-M3 encoder is downloaded separately and remains upstream MIT; the noncommercial grant covers the trained AspectBench MLP heads.

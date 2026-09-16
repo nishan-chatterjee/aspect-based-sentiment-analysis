@@ -90,6 +90,12 @@ def export_state(source: Path, destination: Path, force: bool) -> dict[str, Any]
 
 
 def family_readme(model_name: str, entries: list[dict[str, Any]]) -> str:
+    from license_policy import decorate_model_card
+
+    return decorate_model_card(_family_readme(model_name, entries), model_name)
+
+
+def _family_readme(model_name: str, entries: list[dict[str, Any]]) -> str:
     spec = MODEL_SPECS[model_name]
     available = sum(item["available"] for item in entries)
     rows = []
@@ -354,6 +360,11 @@ def main() -> None:
         )
         (family_dir / "README.md").write_text(
             family_readme(model_name, family_entries), encoding="utf-8"
+        )
+        from license_policy import model_license_notice
+
+        (family_dir / "LICENSE").write_text(
+            model_license_notice(model_name), encoding="utf-8"
         )
 
     manifest["available_slots"] = sum(
