@@ -29,12 +29,10 @@ def test_curated_model_cards_and_license_files():
         assert policy.BIBTEX in card
         assert policy.model_license_notice(name) in card
         assert (family / "LICENSE").read_text() == policy.model_license_notice(name)
+        assert "license: cc-by-nc-4.0\n" in card
+        assert "> [!NOTE]" in card
         if name == "slavic-specific":
-            assert "license: other\n" in card
-            assert "license_link: LICENSE" in card
-            assert "No CC BY-NC grant" in card
-        else:
-            assert "license: cc-by-nc-4.0\n" in card
+            assert "owners, confirmed on 17 September 2026" in card
 
 
 def test_generated_cards_preserve_license_and_citation():

@@ -34,11 +34,7 @@ UPSTREAM_LICENSES = {
 
 
 def model_license_notice(model_name: str) -> str:
-    scope = (
-        "the HBS BERTić masked and unmasked checkpoint contributions only"
-        if model_name == "slavic-specific"
-        else "the AspectBench fine-tuned checkpoint contributions / trained heads"
-    )
+    scope = "the AspectBench fine-tuned checkpoint contributions / trained heads"
     text = f"""## License
 
 Copyright (c) 2026 the AspectBench model contributors.
@@ -68,13 +64,11 @@ retain their original attribution and license notices when redistributing.
     if model_name == "slavic-specific":
         text += """
 
-**Slovenian SloBERTa exception:** the upstream EMBEDDIA/SloBERTa model is
-CC BY-SA 4.0. No CC BY-NC grant or noncommercial restriction is applied here to
-the Slovenian checkpoints. Its ShareAlike terms cannot simply be replaced with
-CC BY-NC. Their licensing needs rights-holder/legal review before the project
-can promise a noncommercial-only release. Obtain an alternative upstream grant,
-use a compatible base model, or agree to retain ShareAlike (which permits
-commercial use). See the [upstream license](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en).
+**Slovenian SloBERTa permission:** the AspectBench fine-tuned SloBERTa
+checkpoints are released under CC BY-NC 4.0 with permission from the SloBERTa
+owners, confirmed on 17 September 2026. This permission concerns the AspectBench
+fine-tuned release; the original EMBEDDIA/SloBERTa release retains its upstream
+[CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en).
 """
     if model_name == "bge-m3-mlp":
         text += "\n\nThe frozen BGE-M3 encoder is downloaded separately and remains upstream MIT; the noncommercial grant covers the trained AspectBench MLP heads.\n"
@@ -87,15 +81,22 @@ def citation_section() -> str:
 
 def decorate_model_card(card: str, model_name: str) -> str:
     """Add notices to generated cards as well as existing curated cards."""
-    metadata = (
-        "license: other\nlicense_name: aspectbench-language-specific\nlicense_link: LICENSE"
-        if model_name == "slavic-specific"
-        else "license: cc-by-nc-4.0"
-    )
+    metadata = "license: cc-by-nc-4.0"
     card = re.sub(r"^license:.*$", metadata, card, count=1, flags=re.MULTILINE)
+    card = re.sub(r"^# (.+)$", r"# \1\n\n" + model_usage_note(), card, count=1, flags=re.MULTILINE)
     # Insert before first body section, immediately after the model introduction.
     index = card.find("\n## ")
     if index == -1:
         index = len(card)
     card = card[:index].rstrip() + "\n\n" + model_license_notice(model_name) + "\n" + card[index:].lstrip()
     return card.rstrip() + "\n\n" + citation_section()
+
+
+def model_usage_note() -> str:
+    return (
+        "> [!NOTE]\n"
+        "> AspectBench fine-tuned checkpoint contributions / trained heads are CC BY-NC 4.0: "
+        "attribution is required, and commercial use requires separate permission. "
+        "Noncommercial describes the use's purpose, not its user's affiliation. "
+        "Third-party base assets and datasets retain their own terms; see the License section.\n"
+    )

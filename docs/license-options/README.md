@@ -23,7 +23,9 @@ license, not the official PolyForm Noncommercial 1.0.0.
 Both options are source-available, not OSI-approved open-source licenses.
 Neither can remove valid prior MIT grants or third-party rights. Actual
 authority to relicense all contributions requires rights-holder review.
-Models and datasets retain separate terms, including the SloBERTa exception.
+Models and datasets retain separate terms. The fine-tuned SloBERTa release has
+NC permission from the SloBERTa owners, confirmed on 17 September 2026; the
+original upstream model retains its CC BY-SA 4.0 license.
 
 References: [official PolyForm](https://polyformproject.org/licenses/noncommercial/1.0.0)
 and [TurboGAP ASL, for comparison](https://turbogap.fi/wiki/index.php/Academic_Software_Licence).

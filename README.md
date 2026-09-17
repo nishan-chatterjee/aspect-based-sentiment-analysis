@@ -1,5 +1,8 @@
 # AspectBench
 
+> [!NOTE]
+> AspectBench model contributions / trained heads are **CC BY-NC 4.0**: attribution is required, and commercial use requires separate permission. Project-owned software uses **PolyForm Noncommercial 1.0.0**, with its stated institutional-use permissions. Third-party assets, datasets and earlier license grants retain their own terms. See [Licensing](#licensing).
+
 AspectBench is the reusable release for document-level aspect-based sentiment
 analysis in Slovenian and HBS (Bosnian/Croatian/Montenegrin/Serbian) news. It
 contains fine-tuned model inference and training, Monte Carlo dropout
@@ -11,15 +14,16 @@ LLMs.
 - [Hugging Face toolkit](https://huggingface.co/nishan-chatterjee/aspect-based-sentiment-analysis)
 - [Hugging Face collection](https://huggingface.co/collections/nishan-chatterjee/aspect-based-sentiment-analysis-6a9016a6d9cab7b093f122d3)
 - [Copy/paste interactive GPU runbook](docs/interactive-smoke-tests.md)
+- [Current release notes — 17 September 2026](docs/release-notes-2026-09-17.md)
 
 ## Licensing
 
-The AspectBench checkpoint contributions and trained heads are **CC BY-NC 4.0**,
-except the Slovenian SloBERTa checkpoints, whose upstream **CC BY-SA 4.0** terms
-require a separate licensing review. See each model repository's `LICENSE` and
-model card for its exact scope and upstream attribution. A blanket
-noncommercial-only claim cannot be made for SloBERTa without an alternative
-upstream permission. The frozen BGE-M3 encoder retains its upstream MIT license;
+The AspectBench checkpoint contributions and trained heads are **CC BY-NC 4.0**.
+See each model repository's `LICENSE` and model card for exact scope and upstream
+attribution. The fine-tuned SloBERTa checkpoints are released under CC BY-NC 4.0
+with permission from the SloBERTa owners, confirmed on 17 September 2026. The
+original SloBERTa release retains its upstream CC BY-SA 4.0 license.
+The frozen BGE-M3 encoder retains its upstream MIT license;
 the trained AspectBench MLP heads are CC BY-NC 4.0.
 
 For the CC BY-NC model contributions, noncommercial research and reuse with

@@ -9,6 +9,9 @@ license: cc-by-nc-4.0
 
 # AspectBench HAN-XLM-R
 
+> [!NOTE]
+> AspectBench fine-tuned checkpoint contributions / trained heads are CC BY-NC 4.0: attribution is required, and commercial use requires separate permission. Noncommercial describes the use's purpose, not its user's affiliation. Third-party base assets and datasets retain their own terms; see the License section.
+
 Model-only checkpoints for HBS and Slovenian document-level aspect-based
 sentiment analysis. This repository contains 4/4 language-mode
 checkpoint slots. It is used with the shared inference toolkit in

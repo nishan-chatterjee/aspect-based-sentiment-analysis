@@ -1,20 +1,17 @@
 # Model and software license review — 2026-09-16
 
-The requested policy is noncommercial model reuse with attribution. The six
-non-Slavic-specific families and HBS BERTić AspectBench checkpoint contributions
-now carry CC BY-NC 4.0 notices. Upstream assets retain their original terms;
+The requested policy is noncommercial model reuse with attribution. All seven
+AspectBench families' checkpoint contributions / trained heads now carry
+CC BY-NC 4.0 notices. Upstream assets retain their original terms;
 the frozen BGE encoder remains MIT, separate from the noncommercial MLP heads.
 All eight Hugging Face cards cite the Frontiers article and plain abstract URL.
 
 ## Outstanding rights-holder decisions
 
-1. Slovenian SloBERTa derives from EMBEDDIA/sloberta, whose public model card
-   declares CC BY-SA 4.0. ShareAlike is not compatible with simply imposing an
-   NC restriction. Obtain a separate upstream permission, replace this base
-   model, or accept compatible ShareAlike terms (commercial reuse permitted).
-   No new license grant is applied to the Slovenian checkpoints in this pass.
-   Review their current public distribution promptly; a blanket noncommercial
-   model-release statement is not accurate while this remains unresolved.
+1. The fine-tuned SloBERTa checkpoints are released under CC BY-NC 4.0 with
+   permission from the SloBERTa owners, confirmed on 17 September 2026. The
+   original EMBEDDIA/SloBERTa release retains its upstream CC BY-SA 4.0 license.
+   This project-specific permission does not change the original public release.
 2. At the project owner's request, current project-owned software is now
    offered under the unmodified PolyForm Noncommercial 1.0.0 license, with
    a scope notice preserving third-party terms and earlier MIT distributions.

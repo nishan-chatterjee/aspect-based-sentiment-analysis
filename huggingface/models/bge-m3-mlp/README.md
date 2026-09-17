@@ -9,6 +9,9 @@ license: cc-by-nc-4.0
 
 # AspectBench BGE-M3 dense + MLP
 
+> [!NOTE]
+> AspectBench fine-tuned checkpoint contributions / trained heads are CC BY-NC 4.0: attribution is required, and commercial use requires separate permission. Noncommercial describes the use's purpose, not its user's affiliation. Third-party base assets and datasets retain their own terms; see the License section.
+
 Selected model-only heads for normalized 1024-dimensional `BAAI/bge-m3`
 document embeddings. Each released head is the best validation Macro-F1 result
 among three fixed train/validation splits; test results were not used for

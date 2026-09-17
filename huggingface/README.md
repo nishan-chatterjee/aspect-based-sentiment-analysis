@@ -11,6 +11,9 @@ license_link: LICENSE
 
 # AspectBench: reusable document-level ABSA inference
 
+> [!NOTE]
+> Separately downloaded AspectBench model contributions / trained heads are **CC BY-NC 4.0**: attribution is required, and commercial use requires separate permission. This software toolkit uses **PolyForm Noncommercial 1.0.0**, with its stated institutional-use permissions. Third-party assets, datasets and earlier grants retain their own terms. See [Licensing](#licensing).
+
 This directory provides one inference interface for seven AspectBench model
 families in HBS and Slovenian. It supports single and batched predictions,
 masked and unmasked aspect handling, and uncertainty estimates from Monte
@@ -26,18 +29,17 @@ This repository contains the shared **PolyForm Noncommercial 1.0.0 software tool
 fine-tuned weight files. Its license does not grant commercial rights to the
 separately downloaded AspectBench model contributions.
 
-The six non-Slavic-specific model families and the HBS BERTić checkpoint
-contributions are [CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/):
+All seven AspectBench families' checkpoint contributions / trained heads are
+[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/):
 noncommercial research and redistribution with attribution are allowed;
 commercial use requires separate permission. Consult each model card and
 `LICENSE` for exact scope and upstream attribution. Third-party base models,
 tokenizers and code retain their own licenses; the frozen BGE-M3 encoder remains
 upstream MIT while the trained AspectBench MLP heads are CC BY-NC 4.0.
 
-**Slovenian SloBERTa exception:** upstream EMBEDDIA/SloBERTa is CC BY-SA 4.0,
-which cannot simply be replaced with a noncommercial restriction. Those
-checkpoints are not relabeled CC BY-NC and need rights-holder/legal review to
-resolve the project's intended restriction. See the
+The fine-tuned SloBERTa checkpoints are released under CC BY-NC 4.0 with permission
+from the SloBERTa owners, confirmed on 17 September 2026. The original SloBERTa
+release retains its upstream CC BY-SA 4.0 license. See the
 [Slavic-specific model card](https://huggingface.co/nishan-chatterjee/aspectbench-slavic-specific).
 
 Noncommercial is about the purpose of use, not academic/company affiliation.

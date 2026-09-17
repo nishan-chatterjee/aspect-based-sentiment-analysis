@@ -2,7 +2,7 @@
 
 Copyright (c) 2026 the AspectBench model contributors.
 
-The HBS BERTić masked and unmasked checkpoint contributions only are licensed under
+The AspectBench fine-tuned checkpoint contributions / trained heads are licensed under
 [Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/).
 The [official legal code](https://creativecommons.org/licenses/by-nc/4.0/legalcode.en) is incorporated by reference.
 Noncommercial research, evaluation, adaptation and redistribution are allowed
@@ -22,10 +22,8 @@ retain their original attribution and license notices when redistributing.
 - hbs: [classla/bcms-bertic](https://huggingface.co/classla/bcms-bertic) — upstream Apache-2.0.
 - slovenian: [EMBEDDIA/sloberta](https://huggingface.co/EMBEDDIA/sloberta) — upstream CC BY-SA 4.0.
 
-**Slovenian SloBERTa exception:** the upstream EMBEDDIA/SloBERTa model is
-CC BY-SA 4.0. No CC BY-NC grant or noncommercial restriction is applied here to
-the Slovenian checkpoints. Its ShareAlike terms cannot simply be replaced with
-CC BY-NC. Their licensing needs rights-holder/legal review before the project
-can promise a noncommercial-only release. Obtain an alternative upstream grant,
-use a compatible base model, or agree to retain ShareAlike (which permits
-commercial use). See the [upstream license](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en).
+**Slovenian SloBERTa permission:** the AspectBench fine-tuned SloBERTa
+checkpoints are released under CC BY-NC 4.0 with permission from the SloBERTa
+owners, confirmed on 17 September 2026. This permission concerns the AspectBench
+fine-tuned release; the original EMBEDDIA/SloBERTa release retains its upstream
+[CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/legalcode.en).

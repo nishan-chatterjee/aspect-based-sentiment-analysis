@@ -507,7 +507,10 @@ def build_cases(args: argparse.Namespace) -> tuple[Path, Path]:
             row = {
                 "case_id": f"{language}:{item.get('uuid')}",
                 "uuid": str(item.get("uuid")),
-                "uuid_Kliping": str(item.get("uuid_Kliping", "")),
+                # Normalize historical source-specific UUID fields without naming providers.
+                "uuid_source": str(item.get("uuid_source", next(
+                    (value for key, value in item.items() if key.startswith("uuid_")), ""
+                ))),
                 "language": language,
                 "language_display": cfg["display"],
                 "expert_key": expert_key,
