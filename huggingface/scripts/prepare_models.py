@@ -361,11 +361,12 @@ def main() -> None:
         (family_dir / "README.md").write_text(
             family_readme(model_name, family_entries), encoding="utf-8"
         )
-        from license_policy import model_license_notice
+        from license_policy import BIBTEX, model_license_notice
 
         (family_dir / "LICENSE").write_text(
             model_license_notice(model_name), encoding="utf-8"
         )
+        (family_dir / "citation.bib").write_text(BIBTEX + "\n", encoding="utf-8")
 
     manifest["available_slots"] = sum(
         entry["available"] for entry in manifest["entries"]

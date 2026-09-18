@@ -480,18 +480,20 @@ complete repository layout automatically.
 
 ## Citation
 
+Download [citation.bib](citation.bib) for Overleaf and cite with `\cite{chatterjee2026}`.
+
 Please cite the accompanying article when using AspectBench:
 
 ```bibtex
-@article{chatterjee2026aspectbench,
-  title   = {Evaluating Fine-Tuned, Embedding-Based, and Zero-Shot Models for
-             Aspect-Based Sentiment Analysis in South Slavic News},
-  author  = {Chatterjee, Nishan and Koloski, Boshko and Doucet, Antoine and
-             Pollak, Senja and Purver, Matthew},
-  journal = {Frontiers in Artificial Intelligence},
-  volume  = {9},
-  year    = {2026},
-  doi     = {10.3389/frai.2026.1844418},
-  url     = {https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract}
+@article{chatterjee2026,
+  title     = {Evaluating fine-tuned, embedding-based, and zero-shot models for aspect-based sentiment analysis in {South Slavic} news},
+  author    = {Chatterjee, Nishan and Koloski, Boshko and Doucet, Antoine and Pollak, Senja and Purver, Matthew},
+  journal   = {Frontiers in Artificial Intelligence},
+  volume    = {9},
+  year      = {2026},
+  publisher = {Frontiers Media SA},
+  issn      = {2624-8212},
+  doi       = {10.3389/frai.2026.1844418},
+  url       = {https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418}
 }
 ```

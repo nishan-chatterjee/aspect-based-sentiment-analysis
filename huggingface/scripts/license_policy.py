@@ -6,19 +6,19 @@ import re
 
 from model_registry import MODEL_SPECS
 
-ARTICLE_URL = "https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract"
+ARTICLE_URL = "https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418"
 NC_URL = "https://creativecommons.org/licenses/by-nc/4.0/"
 NC_LEGAL_URL = NC_URL + "legalcode.en"
-BIBTEX = """@article{chatterjee2026aspectbench,
-  title   = {Evaluating Fine-Tuned, Embedding-Based, and Zero-Shot Models for
-             Aspect-Based Sentiment Analysis in South Slavic News},
-  author  = {Chatterjee, Nishan and Koloski, Boshko and Doucet, Antoine and
-             Pollak, Senja and Purver, Matthew},
-  journal = {Frontiers in Artificial Intelligence},
-  volume  = {9},
-  year    = {2026},
-  doi     = {10.3389/frai.2026.1844418},
-  url     = {https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418/abstract}
+BIBTEX = """@article{chatterjee2026,
+  title     = {Evaluating fine-tuned, embedding-based, and zero-shot models for aspect-based sentiment analysis in {South Slavic} news},
+  author    = {Chatterjee, Nishan and Koloski, Boshko and Doucet, Antoine and Pollak, Senja and Purver, Matthew},
+  journal   = {Frontiers in Artificial Intelligence},
+  volume    = {9},
+  year      = {2026},
+  publisher = {Frontiers Media SA},
+  issn      = {2624-8212},
+  doi       = {10.3389/frai.2026.1844418},
+  url       = {https://www.frontiersin.org/journals/artificial-intelligence/articles/10.3389/frai.2026.1844418}
 }"""
 
 # Public upstream card metadata inspected 2026-09-16. These are not new grants.
@@ -76,7 +76,7 @@ fine-tuned release; the original EMBEDDIA/SloBERTa release retains its upstream
 
 
 def citation_section() -> str:
-    return "## Citation\n\nPlease cite the accompanying article when using AspectBench:\n\n```bibtex\n" + BIBTEX + "\n```\n"
+    return "## Citation\n\nDownload [citation.bib](citation.bib) for Overleaf and cite with `\\cite{chatterjee2026}`.\n\nPlease cite the accompanying article when using AspectBench:\n\n```bibtex\n" + BIBTEX + "\n```\n"
 
 
 def decorate_model_card(card: str, model_name: str) -> str:

@@ -73,3 +73,14 @@ def test_academic_option_is_explicitly_unadopted_custom_draft():
     assert "CUSTOM DRAFT" in draft
     assert "NOT ADOPTED" in draft
     assert "not legal advice" in draft
+
+
+def test_compact_published_citation_and_downloads_match():
+    policy = load_policy()
+    assert policy.BIBTEX.startswith("@article{chatterjee2026,")
+    assert "abstract" not in policy.BIBTEX.lower()
+    assert "{2624-8212}" in policy.BIBTEX
+    assert "{9}" in policy.BIBTEX
+    for path in [ROOT / "citation.bib", ROOT / "huggingface/citation.bib"]:
+        assert path.read_text().strip() == policy.BIBTEX
+    assert policy.BIBTEX in (ROOT / "README.md").read_text()
